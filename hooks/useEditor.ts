@@ -93,15 +93,29 @@ export const useEditor = (
             const nodeElement = e.currentTarget.parentElement;
             if (nodeElement) {
                 const rect = nodeElement.getBoundingClientRect();
+
+                const currentWidth = node.width || (rect.width / viewTransform.scale);
+                const currentHeight = node.height || (rect.height / viewTransform.scale);
+
+                // Determine the effective initial size, ensuring it respects min dimensions
+                const initialWidth = Math.max(currentWidth, node.minWidth || 0);
+                const initialHeight = Math.max(currentHeight, node.minHeight || 0);
+
+                // If the node's dimensions are smaller than the minimums, update them immediately
+                // to prevent the "jump" on the first resize tick.
+                if (node.width !== initialWidth || node.height !== initialHeight) {
+                    updateNode(node.id, { width: initialWidth, height: initialHeight });
+                }
+
                 setResizingNode({
                     id: nodeId,
-                    initialWidth: node.width || (rect.width / viewTransform.scale),
-                    initialHeight: node.height || (rect.height / viewTransform.scale),
+                    initialWidth: initialWidth,
+                    initialHeight: initialHeight,
                     startPoint: { x: e.clientX, y: e.clientY },
                 });
             }
         }
-    }, [nodes, viewTransform.scale]);
+    }, [nodes, viewTransform.scale, updateNode]);
 
     const handleNodeResize = useCallback((e: MouseEvent<HTMLDivElement>) => {
         if (!resizingNode) return;

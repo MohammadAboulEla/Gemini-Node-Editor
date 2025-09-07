@@ -15,7 +15,7 @@ export const PreviewNode: React.FC<NodeContentProps> = ({ node }) => {
                     </span>
                 )}
             </div>
-            {text && (
+            {text?.trim() && (
                 <p className="flex-shrink-0 text-xs text-slate-300 p-1 bg-slate-900 rounded max-h-[33%] overflow-y-auto">
                     {text}
                 </p>

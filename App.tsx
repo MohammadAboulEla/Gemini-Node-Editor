@@ -18,7 +18,7 @@ const INITIAL_NODES: NodeType[] = [
     },
     { 
         id: 'node-2', type: EnumNodeType.Prompt, position: { x: 50, y: 370 }, title: 'Prompt',
-        width: 256, minWidth: 256, minHeight: 160,
+        width: 256, minWidth: 256, minHeight: 100,
         inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: {}
     },
     {
