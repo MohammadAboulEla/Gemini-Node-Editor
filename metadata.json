@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Node Editor",
+  "description": "A node-based visual editor to create workflows using the Gemini API. This initial version allows users to load an image, provide a prompt, and use the 'nano-banana' model to edit the image, then preview the result.",
+  "requestFramePermissions": []
+}
