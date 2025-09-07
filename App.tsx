@@ -3,6 +3,7 @@ import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeTyp
 import Node from './components/Node';
 import Connection from './components/Connection';
 import AddNodeMenu from './components/AddNodeMenu';
+import Tooltip from './components/Tooltip';
 import { PlusIcon, PlayIcon, SpinnerIcon } from './components/icons';
 
 import { useViewTransform } from './hooks/useViewTransform';
@@ -188,10 +189,16 @@ const App: React.FC = () => {
                 e.preventDefault();
                 handleOpenAddNodeMenu();
             }
+             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                if (!isWorkflowRunning) {
+                    runWorkflow();
+                }
+            }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleOpenAddNodeMenu]);
+    }, [handleOpenAddNodeMenu, runWorkflow, isWorkflowRunning]);
     
     // Effect to manage the temporary connection path
     useEffect(() => {
@@ -227,23 +234,25 @@ const App: React.FC = () => {
             {/* Sidebar */}
             <div className="w-14 h-full bg-slate-800 border-r border-slate-700 flex flex-col items-center p-3 gap-3 shrink-0">
                 <div className="flex flex-col gap-2">
-                    <button 
-                        onClick={runWorkflow} 
-                        disabled={isWorkflowRunning} 
-                        className="flex items-center justify-center w-10 h-10 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400 rounded-lg transition-colors" 
-                        aria-label="Run Workflow"
-                        title="Run Workflow"
-                    >
-                        {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
-                    </button>
-                    <button 
-                        onClick={handleOpenAddNodeMenu}
-                        className="flex items-center justify-center w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors" 
-                        aria-label="Add Node"
-                        title="Add Node"
-                    >
-                        <PlusIcon className="w-5 h-5" />
-                    </button>
+                    <Tooltip content="Run Workflow (Ctrl+Enter)">
+                        <button 
+                            onClick={runWorkflow} 
+                            disabled={isWorkflowRunning} 
+                            className="flex items-center justify-center w-10 h-10 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400 rounded-lg transition-colors" 
+                            aria-label="Run Workflow"
+                        >
+                            {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Add Node (Ctrl+K)">
+                        <button 
+                            onClick={handleOpenAddNodeMenu}
+                            className="flex items-center justify-center w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors" 
+                            aria-label="Add Node"
+                        >
+                            <PlusIcon className="w-5 h-5" />
+                        </button>
+                    </Tooltip>
                 </div>
             </div>
 

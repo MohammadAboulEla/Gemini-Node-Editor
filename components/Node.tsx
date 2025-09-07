@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Node as NodeType, NodeType as EnumNodeType } from '../types';
 import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
+import Tooltip from './Tooltip';
 
 import { ImageLoaderNode } from './nodes/ImageLoaderNode';
 import { PromptNode } from './nodes/PromptNode';
@@ -51,6 +53,8 @@ const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
 
 const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, setPortRef, updateNodeData, updateNode }) => {
     const Icon = ICONS[node.type];
+    
+    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
     return (
         <div
@@ -75,26 +79,46 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
             </div>
 
             {/* Input Ports */}
-            {node.inputs.map((port, index) => (
-                <div
-                    key={port.id}
-                    ref={(el) => setPortRef(node.id, port.id, el)}
-                    onMouseDown={(e) => { e.stopPropagation(); }} // Prevent node drag
-                    className={`absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-600 border-2 border-slate-400 hover:bg-cyan-500 cursor-crosshair`}
-                    style={{ top: `${20 + (100-40) / (node.inputs.length + 1) * (index + 1)}%` }}
-                ></div>
-            ))}
+            {node.inputs.map((port, index) => {
+                const portLabel = `Input: ${capitalize(port.dataType)}`;
+                return (
+                    <div
+                        key={port.id}
+                        className="absolute -left-2.5 top-1/2 -translate-y-1/2"
+                        style={{ top: `${20 + (100 - 40) / (node.inputs.length + 1) * (index + 1)}%` }}
+                    >
+                        <Tooltip content={portLabel} placement="right">
+                            <div
+                                ref={(el) => setPortRef(node.id, port.id, el)}
+                                onMouseDown={(e) => { e.stopPropagation(); }} // Prevent node drag
+                                className="w-5 h-5 rounded-full bg-slate-600 border-2 border-slate-400 hover:bg-cyan-500 cursor-crosshair"
+                                aria-label={portLabel}
+                            ></div>
+                        </Tooltip>
+                    </div>
+                );
+            })}
 
             {/* Output Ports */}
-            {node.outputs.map((port, index) => (
-                <div
-                    key={port.id}
-                    ref={(el) => setPortRef(node.id, port.id, el)}
-                    onMouseDown={(e) => { e.stopPropagation(); onPortMouseDown(e, node.id, port.id); }}
-                    className={`absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-600 border-2 border-slate-400 hover:bg-cyan-500 cursor-crosshair`}
-                    style={{ top: `${20 + (100-40) / (node.outputs.length + 1) * (index + 1)}%` }}
-                ></div>
-            ))}
+            {node.outputs.map((port, index) => {
+                const portLabel = `Output: ${capitalize(port.dataType)}`;
+                return (
+                    <div
+                        key={port.id}
+                        className="absolute -right-2.5 top-1/2 -translate-y-1/2"
+                        style={{ top: `${20 + (100 - 40) / (node.outputs.length + 1) * (index + 1)}%` }}
+                    >
+                        <Tooltip content={portLabel} placement="left">
+                            <div
+                                ref={(el) => setPortRef(node.id, port.id, el)}
+                                onMouseDown={(e) => { e.stopPropagation(); onPortMouseDown(e, node.id, port.id); }}
+                                className="w-5 h-5 rounded-full bg-slate-600 border-2 border-slate-400 hover:bg-cyan-500 cursor-crosshair"
+                                aria-label={portLabel}
+                            ></div>
+                        </Tooltip>
+                    </div>
+                );
+            })}
 
             {node.resizable !== false && (
                 <div
