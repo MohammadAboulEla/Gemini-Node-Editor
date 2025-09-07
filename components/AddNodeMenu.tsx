@@ -11,7 +11,7 @@ interface AddNodeMenuProps {
 }
 
 const NODE_OPTIONS = [
-    { type: EnumNodeType.ImageLoader, title: 'Reference Image', icon: ImageIcon },
+    { type: EnumNodeType.ImageLoader, title: 'Load Image', icon: ImageIcon },
     { type: EnumNodeType.Prompt, title: 'Prompt', icon: TextIcon },
     { type: EnumNodeType.ImageGenerator, title: 'Gemini Image', icon: MagicWandIcon },
     { type: EnumNodeType.ImageStitcher, title: 'Stitch Images', icon: StitchIcon },

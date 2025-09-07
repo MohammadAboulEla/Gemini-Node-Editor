@@ -11,7 +11,7 @@ import { useWorkflow } from './hooks/useWorkflow';
 
 const INITIAL_NODES: NodeType[] = [
     { 
-        id: 'node-1', type: EnumNodeType.ImageLoader, position: { x: 50, y: 140 }, title: 'Reference Image',
+        id: 'node-1', type: EnumNodeType.ImageLoader, position: { x: 50, y: 140 }, title: 'Load Image',
         width: 256, height: 220, minWidth: 256, minHeight: 220,
         inputs: [], outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], data: {}
     },
@@ -153,6 +153,16 @@ const App: React.FC = () => {
         });
     };
 
+    const handleContextMenu = (e: MouseEvent<HTMLDivElement>) => {
+        if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('background-grid')) {
+            e.preventDefault();
+            setAddNodeMenu({
+                visible: true,
+                position: { x: e.clientX, y: e.clientY },
+            });
+        }
+    };
+
     const handleAddNode = useCallback((nodeType: EnumNodeType) => {
         if (!addNodeMenu?.position) return;
         const worldPos = getPositionInWorldSpace(addNodeMenu.position);
@@ -246,6 +256,7 @@ const App: React.FC = () => {
                 onMouseDown={handleEditorMouseDown}
                 onWheel={handleWheel}
                 onDoubleClick={handleBackgroundDoubleClick}
+                onContextMenu={handleContextMenu}
             >
                 <div className="absolute inset-0 bg-slate-900 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] background-grid"></div>
                 

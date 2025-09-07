@@ -15,7 +15,7 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
         case EnumNodeType.ImageLoader:
             return {
                 ...baseNode,
-                title: 'Reference Image',
+                title: 'Load Image',
                 inputs: [],
                 outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
                 height: 220,
