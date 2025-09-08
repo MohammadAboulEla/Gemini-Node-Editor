@@ -16,6 +16,7 @@ export interface NodePort {
   id: string;
   type: 'input' | 'output';
   dataType: 'image' | 'text' | 'any';
+  label?: string;
 }
 
 export interface Node {

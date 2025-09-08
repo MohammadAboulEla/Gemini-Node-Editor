@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType } from '../types';
-import { editImage, generateImage, describeImage, DescribeMode } from '../services/geminiService';
+import { editImage, generateImage, describeImage, DescribeMode, mixImages } from '../services/geminiService';
 
 const normalizeImageInput = (input: any): { base64Image: string; mimeType: string } | null => {
     if (!input) return null;
@@ -90,9 +90,9 @@ export const useWorkflow = (
                         }
 
                         if (mode === 'edit') {
-                            const imageInput = inputs['image-input'];
-                             if (!imageInput?.base64Image || !imageInput?.mimeType) {
-                                throw new Error("Missing image input for edit mode.");
+                            const imageInput = normalizeImageInput(inputs['image-input']);
+                            if (!imageInput) {
+                                throw new Error("Missing or invalid image input for edit mode.");
                             }
                             const cacheKey = `edit-${promptInput.text}-${imageInput.base64Image}`;
                             const cachedResult = node.data.cache?.[cacheKey];
@@ -101,6 +101,28 @@ export const useWorkflow = (
                                 output = { 'result-output': cachedResult };
                             } else {
                                 const result = await editImage(imageInput.base64Image, imageInput.mimeType, promptInput.text);
+                                const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
+                                updateNodeData(node.id, { cache: newCache });
+                                output = { 'result-output': result };
+                            }
+                        } else if (mode === 'mix') {
+                            const sourceImageInput = normalizeImageInput(inputs['image-input']);
+                            const refImageInput = normalizeImageInput(inputs['ref-image-input']);
+    
+                            if (!sourceImageInput) {
+                                throw new Error("Missing or invalid source image input for mix mode.");
+                            }
+                            if (!refImageInput) {
+                                throw new Error("Missing or invalid reference image input for mix mode.");
+                            }
+    
+                            const cacheKey = `mix-${promptInput.text}-${sourceImageInput.base64Image}-${refImageInput.base64Image}`;
+                            const cachedResult = node.data.cache?.[cacheKey];
+    
+                            if (cachedResult) {
+                                output = { 'result-output': cachedResult };
+                            } else {
+                                const result = await mixImages(sourceImageInput, refImageInput, promptInput.text);
                                 const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
                                 updateNodeData(node.id, { cache: newCache });
                                 output = { 'result-output': result };

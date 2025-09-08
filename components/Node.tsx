@@ -80,7 +80,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
 
             {/* Input Ports */}
             {node.inputs.map((port, index) => {
-                const portLabel = `Input: ${capitalize(port.dataType)}`;
+                const portLabel = port.label || `Input: ${capitalize(port.dataType)}`;
                 return (
                     <div
                         key={port.id}
@@ -101,7 +101,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
 
             {/* Output Ports */}
             {node.outputs.map((port, index) => {
-                const portLabel = `Output: ${capitalize(port.dataType)}`;
+                const portLabel = port.label || `Output: ${capitalize(port.dataType)}`;
                 return (
                     <div
                         key={port.id}

@@ -6,15 +6,22 @@ export const ImageGeneratorNode: React.FC<NodeContentProps> = ({ node, updateNod
 
     const handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newMode = e.target.value;
-        // Fix: Explicitly type `newInputs` as `NodePort[]`. TypeScript was inferring the `type` property
-        // as a generic `string` instead of the required literal type `'input'`, which is not assignable
-        // to the `'input' | 'output'` type in `NodePort`. This caused a type error when calling `updateNode`.
-        const newInputs: NodePort[] = newMode === 'generate'
-            ? [{ id: 'prompt-input', type: 'input', dataType: 'text' }]
-            : [
-                { id: 'image-input', type: 'input', dataType: 'image' },
-                { id: 'prompt-input', type: 'input', dataType: 'text' },
-              ];
+        let newInputs: NodePort[];
+        
+        if (newMode === 'generate') {
+            newInputs = [{ id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' }];
+        } else if (newMode === 'mix') {
+            newInputs = [
+                { id: 'image-input', type: 'input', dataType: 'image', label: 'Source Image' },
+                { id: 'ref-image-input', type: 'input', dataType: 'image', label: 'Reference Image' },
+                { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' },
+            ];
+        } else { // 'edit'
+            newInputs = [
+                { id: 'image-input', type: 'input', dataType: 'image', label: 'Image' },
+                { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' },
+            ];
+        }
 
         updateNode(node.id, {
             inputs: newInputs,
@@ -41,6 +48,7 @@ export const ImageGeneratorNode: React.FC<NodeContentProps> = ({ node, updateNod
                 >
                     <option value="edit">Edit</option>
                     <option value="generate">Generate</option>
+                    <option value="mix">Mix</option>
                 </select>
             </div>
         </div>

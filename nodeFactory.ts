@@ -34,8 +34,8 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 ...baseNode,
                 title: 'Gemini Image',
                 inputs: [
-                    { id: 'image-input', type: 'input', dataType: 'image' },
-                    { id: 'prompt-input', type: 'input', dataType: 'text' },
+                    { id: 'image-input', type: 'input', dataType: 'image', label: 'Image' },
+                    { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' },
                 ],
                 outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }],
                 data: { status: 'idle', cache: {}, mode: 'edit' },

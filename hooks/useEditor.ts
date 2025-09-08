@@ -232,13 +232,13 @@ export const useEditor = (
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Delete' || e.key === 'Backspace') {
+            if (e.key === 'Delete') {
                 if (selectedNodeId) {
                     e.preventDefault();
                     setNodes(prev => prev.filter(n => n.id !== selectedNodeId));
                     setSelectedNodeId(null);
                 } else if (selectedConnectionId) {
-e.preventDefault();
+                    e.preventDefault();
                     setConnections(prev => prev.filter(c => c.id !== selectedConnectionId));
                     setSelectedConnectionId(null);
                 }
