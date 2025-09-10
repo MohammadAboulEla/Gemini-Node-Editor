@@ -11,18 +11,18 @@ import { useEditor } from './hooks/useEditor';
 import { useWorkflow } from './hooks/useWorkflow';
 
 const INITIAL_NODES: NodeType[] = [
-    { 
-        id: 'node-1', type: EnumNodeType.ImageLoader, position: { x: 50, y: 140 }, title: 'Load Image',
+    {
+        id: 'node-1', type: EnumNodeType.ImageLoader, position: { x: 20, y: 140 }, title: 'Load Image',
         width: 256, height: 220, minWidth: 256, minHeight: 220,
         inputs: [], outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], data: {}
     },
-    { 
-        id: 'node-2', type: EnumNodeType.Prompt, position: { x: 50, y: 370 }, title: 'Prompt',
+    {
+        id: 'node-2', type: EnumNodeType.Prompt, position: { x: 20, y: 370 }, title: 'Prompt',
         width: 256, minWidth: 256, minHeight: 100,
         inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: {}
     },
     {
-        id: 'node-3', type: EnumNodeType.ImageGenerator, position: { x: 400, y: 250 }, title: 'Gemini Image',
+        id: 'node-3', type: EnumNodeType.ImageGenerator, position: { x: 310, y: 250 }, title: 'Gemini Image',
         width: 256, resizable: false,
         inputs: [
             { id: 'image-input', type: 'input', dataType: 'image' },
@@ -32,8 +32,8 @@ const INITIAL_NODES: NodeType[] = [
         data: { status: 'idle', mode: 'edit' }
     },
     {
-        id: 'node-4', type: EnumNodeType.Preview, position: { x: 750, y: 250 }, title: 'Result Preview',
-        width: 256, height: 220, minWidth: 256, minHeight: 220,
+        id: 'node-4', type: EnumNodeType.Preview, position: { x: 600, y: 100 }, title: 'Result Preview',
+        width: 456, height: 420, minWidth: 256, minHeight: 220,
         inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }],
         outputs: [], data: {}
     }
@@ -71,10 +71,10 @@ const App: React.FC = () => {
     const [addNodeMenu, setAddNodeMenu] = useState<AddNodeMenuState | null>(null);
 
     const {
-        viewTransform, isPanning, handleWheel, handlePanMouseDown, handlePanMouseMove, 
+        viewTransform, isPanning, handleWheel, handlePanMouseDown, handlePanMouseMove,
         stopPanning, resetView, getPositionInWorldSpace
     } = useViewTransform(editorRef);
-    
+
     const {
         nodes, connections, draggingNode, connecting, setConnecting, selectedNodeId, selectedConnectionId,
         portPositions, updateNodeData, updateNode, deselectAll, handleNodeMouseDown, handlePortMouseDown,
@@ -83,12 +83,12 @@ const App: React.FC = () => {
     } = useEditor(INITIAL_NODES, INITIAL_CONNECTIONS, viewTransform, getPositionInWorldSpace);
 
     const { isWorkflowRunning, runWorkflow } = useWorkflow(nodes, connections, updateNodeData);
-    
+
     const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
         handlePanMouseMove(e);
         handleNodeDrag(e);
         handleNodeResize(e);
-        
+
         if (connecting && tempConnectionPathRef.current && editorRef.current) {
             const editorRect = editorRef.current.getBoundingClientRect();
 
@@ -119,7 +119,7 @@ const App: React.FC = () => {
                 return e.clientX >= left && e.clientX <= right && e.clientY >= top && e.clientY <= bottom;
             });
             const toNode = toPort ? nodes.find(n => n.id === toPort.nodeId) : null;
-            
+
             if (toPort && toNode && toNode.id !== connecting.fromNodeId && toNode.inputs.some(p => p.id === toPort.portId)) {
                 createConnection(connecting.fromNodeId, connecting.fromPortId, toPort.nodeId, toPort.portId);
             } else if (!toPort) {
@@ -145,7 +145,7 @@ const App: React.FC = () => {
             handlePanMouseDown(e);
         }
     }
-    
+
     const handleBackgroundDoubleClick = (e: MouseEvent<HTMLDivElement>) => {
         if (e.target !== e.currentTarget) return;
         setAddNodeMenu({
@@ -189,7 +189,7 @@ const App: React.FC = () => {
                 e.preventDefault();
                 handleOpenAddNodeMenu();
             }
-             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault();
                 if (!isWorkflowRunning) {
                     runWorkflow();
@@ -199,7 +199,7 @@ const App: React.FC = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleOpenAddNodeMenu, runWorkflow, isWorkflowRunning]);
-    
+
     // Effect to manage the temporary connection path
     useEffect(() => {
         if (connecting && !tempConnectionPathRef.current && svgRef.current && editorRef.current) {
@@ -224,14 +224,23 @@ const App: React.FC = () => {
     };
 
     const ZoomControls = () => (
-        <div className="absolute bottom-4 right-4 bg-slate-800/50 backdrop-blur-sm p-2 rounded-lg border border-slate-700 flex items-center gap-1">
-            <button onClick={() => resetView()} className="w-12 h-8 rounded hover:bg-slate-700 text-xs">{Math.round(viewTransform.scale * 100)}%</button>
+        <div
+            className="absolute bottom-4 right-4 pointer-events-auto bg-slate-800/50 backdrop-blur-sm p-2 rounded-lg border border-slate-700 flex items-center gap-1"
+            onPointerDown={(e) => e.stopPropagation()}
+        >
+            <button
+                onClick={resetView}
+                className="w-12 h-8 rounded hover:bg-slate-700 text-xs"
+            >
+                {Math.round(viewTransform.scale * 100)}%
+            </button>
         </div>
     );
-    
+
     return (
         <div className="w-screen h-screen flex bg-slate-900 text-white">
-            {/* Sidebar */}
+
+            {/* Hide Sidebar for using latter
             <div className="w-14 h-full bg-slate-800 border-r border-slate-700 flex flex-col items-center p-3 gap-3 shrink-0">
                 <div className="flex flex-col gap-2">
                     <Tooltip content="Run Workflow (Ctrl+Enter)">
@@ -244,6 +253,7 @@ const App: React.FC = () => {
                             {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
                         </button>
                     </Tooltip>
+                    
                     <Tooltip content="Add Node (Ctrl+K)">
                         <button 
                             onClick={handleOpenAddNodeMenu}
@@ -254,10 +264,10 @@ const App: React.FC = () => {
                         </button>
                     </Tooltip>
                 </div>
-            </div>
+            </div> */}
 
             {/* Editor Canvas */}
-            <div 
+            <div
                 ref={editorRef}
                 className="flex-grow h-full overflow-hidden relative cursor-default"
                 onMouseMove={handleMouseMove}
@@ -268,12 +278,12 @@ const App: React.FC = () => {
                 onContextMenu={handleContextMenu}
             >
                 <div className="absolute inset-0 bg-slate-900 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] background-grid"></div>
-                
-                <div 
+
+                <div
                     className="absolute top-0 left-0"
                     style={{
                         transform: `translate(${viewTransform.x}px, ${viewTransform.y}px) scale(${viewTransform.scale})`,
-                        transformOrigin: '0 0' 
+                        transformOrigin: '0 0'
                     }}
                 >
                     <svg ref={svgRef} className="absolute top-0 left-0 pointer-events-none" style={{ overflow: 'visible' }}>
@@ -299,8 +309,43 @@ const App: React.FC = () => {
                         />
                     ))}
                 </div>
-                
-                <ZoomControls />
+
+                {/* Zoom controls placed outside the editor container to avoid canvas intercepting events */}
+                <div
+                    className="absolute bottom-4 left-4 pointer-events-auto z-[9999] bg-slate-800/50 backdrop-blur-sm p-2 rounded-lg border border-slate-700 flex flex-col items-center gap-2"
+                    onPointerDown={(e) => { e.stopPropagation(); }}
+                >
+                    <Tooltip content="Run Workflow (Ctrl+Enter)" placement="top">
+                        <button
+                            onClick={runWorkflow}
+                            disabled={isWorkflowRunning}
+                            className="flex items-center justify-center w-12 h-10 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400 rounded-lg transition-colors"
+                            aria-label="Run Workflow"
+                        >
+                            {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Rest View" placement="left">
+                        <button
+                            type="button"
+                            onClick={resetView}
+                            onPointerDown={(e) => { e.stopPropagation(); e.nativeEvent?.stopImmediatePropagation?.(); }}
+                            className="w-12 h-8 rounded hover:bg-slate-700 text-xs"
+                        >
+                            {Math.round(viewTransform.scale * 100)}%
+                        </button>
+                    </Tooltip>
+                    {/* Keep commented for now                    
+                    <Tooltip content="Add Node (Ctrl+K)" placement="left">
+                        <button
+                            onClick={handleOpenAddNodeMenu}
+                            className="flex items-center justify-center w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+                            aria-label="Add Node"
+                        >
+                            <PlusIcon className="w-5 h-5" />
+                        </button>
+                    </Tooltip> */}
+                </div>
 
                 {addNodeMenu?.visible && (
                     <AddNodeMenu
