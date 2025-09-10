@@ -16,6 +16,11 @@ export const ImageGeneratorNode: React.FC<NodeContentProps> = ({ node, updateNod
                 { id: 'ref-image-input', type: 'input', dataType: 'image', label: 'Reference Image' },
                 { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' },
             ];
+        } else if (newMode === 'style') {
+            newInputs = [
+                { id: 'ref-image-input', type: 'input', dataType: 'image', label: 'Reference Image' },
+                { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' },
+            ];
         } else { // 'edit'
             newInputs = [
                 { id: 'image-input', type: 'input', dataType: 'image', label: 'Image' },
@@ -48,6 +53,7 @@ export const ImageGeneratorNode: React.FC<NodeContentProps> = ({ node, updateNod
                 >
                     <option value="edit">Edit</option>
                     <option value="generate">Generate</option>
+                    <option value="style">Style</option>
                     <option value="mix">Mix</option>
                 </select>
             </div>

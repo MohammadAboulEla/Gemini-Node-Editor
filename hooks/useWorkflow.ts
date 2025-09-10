@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType } from '../types';
-import { editImage, generateImage, describeImage, DescribeMode, mixImages } from '../services/geminiService';
+import { editImage, generateImage, describeImage, DescribeMode, mixImages, generateWithStyle } from '../services/geminiService';
 
 const normalizeImageInput = (input: any): { base64Image: string; mimeType: string } | null => {
     if (!input) return null;
@@ -123,6 +123,24 @@ export const useWorkflow = (
                                 output = { 'result-output': cachedResult };
                             } else {
                                 const result = await mixImages(sourceImageInput, refImageInput, promptInput.text);
+                                const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
+                                updateNodeData(node.id, { cache: newCache });
+                                output = { 'result-output': result };
+                            }
+                        } else if (mode === 'style') {
+                            const refImageInput = normalizeImageInput(inputs['ref-image-input']);
+    
+                            if (!refImageInput) {
+                                throw new Error("Missing or invalid reference image input for style mode.");
+                            }
+    
+                            const cacheKey = `style-${promptInput.text}-${refImageInput.base64Image}`;
+                            const cachedResult = node.data.cache?.[cacheKey];
+    
+                            if (cachedResult) {
+                                output = { 'result-output': cachedResult };
+                            } else {
+                                const result = await generateWithStyle(refImageInput, promptInput.text);
                                 const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
                                 updateNodeData(node.id, { cache: newCache });
                                 output = { 'result-output': result };

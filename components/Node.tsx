@@ -122,7 +122,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
 
             {node.resizable !== false && (
                 <div
-                    className="absolute -bottom-1 -right-1 w-4 h-4 cursor-se-resize text-slate-600 hover:text-cyan-400 transition-colors"
+                    className="absolute -bottom-1 -right-1 w-4 h-4 cursor-se-resize text-slate-600 hover:text-cyan-500 transition-colors"
                     onMouseDown={(e) => onResizeMouseDown(e, node.id)}
                     aria-label={`Resize ${node.title}`}
                     role="button"

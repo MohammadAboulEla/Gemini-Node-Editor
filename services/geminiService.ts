@@ -121,6 +121,65 @@ export const mixImages = async (sourceImage: {base64Image: string, mimeType: str
     }
 };
 
+export const generateWithStyle = async (refImage: {base64Image: string, mimeType: string}, prompt: string): Promise<{imageUrl: string, text: string}> => {
+    try {
+        const refImagePart = {
+            inlineData: {
+                data: refImage.base64Image,
+                mimeType: refImage.mimeType,
+            },
+        };
+
+        const instructionPart = {
+            text: "Use the style from the provided image to generate a new image based on the following prompt.",
+        };
+
+        const textPart = {
+            text: prompt,
+        };
+
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image-preview',
+            contents: {
+                parts: [
+                    instructionPart,
+                    refImagePart,
+                    textPart,
+                ],
+            },
+            config: {
+                responseModalities: [Modality.IMAGE, Modality.TEXT],
+            },
+        });
+        
+        if (!response.candidates || response.candidates.length === 0 || !response.candidates[0].content || !response.candidates[0].content.parts) {
+            throw new Error("API returned an invalid or empty response. This could be due to content safety filters.");
+        }
+
+        let resultImageUrl = '';
+        let resultText = 'No text response from model.';
+
+        for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData) {
+                const base64ImageBytes: string = part.inlineData.data;
+                resultImageUrl = `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+            } else if (part.text) {
+                resultText = part.text;
+            }
+        }
+        
+        if (!resultImageUrl) {
+            throw new Error("API did not return an image.");
+        }
+
+        return { imageUrl: resultImageUrl, text: resultText };
+
+    } catch (error) {
+        console.error("Error generating with style using Gemini API:", error);
+        throw new Error("Failed to generate with style. Please check the console for details.");
+    }
+};
+
 
 export const generateImage = async (prompt: string): Promise<{imageUrl: string}> => {
     try {

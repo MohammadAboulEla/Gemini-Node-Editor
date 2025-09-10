@@ -35,7 +35,6 @@ const Connection: React.FC<ConnectionProps> = ({ from, to, isSelected, onClick }
         stroke={strokeColor}
         strokeWidth={strokeWidth}
         fill="none"
-        className="transition-all duration-150"
       />
     </g>
   );
