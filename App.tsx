@@ -4,7 +4,8 @@ import Node from './components/Node';
 import Connection from './components/Connection';
 import AddNodeMenu from './components/AddNodeMenu';
 import Tooltip from './components/Tooltip';
-import { PlusIcon, PlayIcon, SpinnerIcon } from './components/icons';
+import { PlusIcon, PlayIcon, SpinnerIcon, HistoryIcon } from './components/icons';
+import HistoryPanel from './components/HistoryPanel';
 
 import { useViewTransform } from './hooks/useViewTransform';
 import { useEditor } from './hooks/useEditor';
@@ -55,6 +56,11 @@ interface AddNodeMenuState {
     };
 }
 
+interface HistoryItem {
+    id: string;
+    imageUrl: string;
+}
+
 const createPathData = (from: Point, to: Point): string => {
     const dx = to.x - from.x;
     const controlPointX1 = from.x + dx * 0.5;
@@ -69,6 +75,8 @@ const App: React.FC = () => {
     const svgRef = useRef<SVGSVGElement>(null);
     const tempConnectionPathRef = useRef<SVGPathElement | null>(null);
     const [addNodeMenu, setAddNodeMenu] = useState<AddNodeMenuState | null>(null);
+    const [history, setHistory] = useState<HistoryItem[]>([]);
+    const [isHistoryPanelVisible, setIsHistoryPanelVisible] = useState(false);
 
     const {
         viewTransform, isPanning, handleWheel, handlePanMouseDown, handlePanMouseMove,
@@ -82,7 +90,16 @@ const App: React.FC = () => {
         handleResizeMouseDown, handleNodeResize, stopResizingNode
     } = useEditor(INITIAL_NODES, INITIAL_CONNECTIONS, viewTransform, getPositionInWorldSpace);
 
-    const { isWorkflowRunning, runWorkflow } = useWorkflow(nodes, connections, updateNodeData);
+    const addToHistory = useCallback((imageUrl: string) => {
+        setHistory(prevHistory => {
+            if (prevHistory.some(item => item.imageUrl === imageUrl)) {
+                return prevHistory;
+            }
+            return [{ id: `hist-${Date.now()}`, imageUrl }, ...prevHistory];
+        });
+    }, []);
+
+    const { isWorkflowRunning, runWorkflow } = useWorkflow(nodes, connections, updateNodeData, addToHistory);
 
     const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
         handlePanMouseMove(e);
@@ -223,50 +240,8 @@ const App: React.FC = () => {
         });
     };
 
-    const ZoomControls = () => (
-        <div
-            className="absolute bottom-4 right-4 pointer-events-auto bg-slate-800/50 backdrop-blur-sm p-2 rounded-lg border border-slate-700 flex items-center gap-1"
-            onPointerDown={(e) => e.stopPropagation()}
-        >
-            <button
-                onClick={resetView}
-                className="w-12 h-8 rounded hover:bg-slate-700 text-xs"
-            >
-                {Math.round(viewTransform.scale * 100)}%
-            </button>
-        </div>
-    );
-
     return (
         <div className="w-screen h-screen flex bg-slate-900 text-white">
-
-            {/* Hide Sidebar for using latter
-            <div className="w-14 h-full bg-slate-800 border-r border-slate-700 flex flex-col items-center p-3 gap-3 shrink-0">
-                <div className="flex flex-col gap-2">
-                    <Tooltip content="Run Workflow (Ctrl+Enter)">
-                        <button 
-                            onClick={runWorkflow} 
-                            disabled={isWorkflowRunning} 
-                            className="flex items-center justify-center w-10 h-10 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400 rounded-lg transition-colors" 
-                            aria-label="Run Workflow"
-                        >
-                            {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
-                        </button>
-                    </Tooltip>
-                    
-                    <Tooltip content="Add Node (Ctrl+K)">
-                        <button 
-                            onClick={handleOpenAddNodeMenu}
-                            className="flex items-center justify-center w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors" 
-                            aria-label="Add Node"
-                        >
-                            <PlusIcon className="w-5 h-5" />
-                        </button>
-                    </Tooltip>
-                </div>
-            </div> */}
-
-            {/* Editor Canvas */}
             <div
                 ref={editorRef}
                 className="flex-grow h-full overflow-hidden relative cursor-default"
@@ -310,9 +285,8 @@ const App: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Zoom controls placed outside the editor container to avoid canvas intercepting events */}
                 <div
-                    className="absolute bottom-4 left-4 pointer-events-auto z-[9999] bg-slate-800/50 backdrop-blur-sm p-2 rounded-lg border border-slate-700 flex flex-col items-center gap-2"
+                    className="absolute bottom-2 left-2 pointer-events-auto z-[9999] bg-slate-800/50 backdrop-blur-sm p-2 rounded-lg border border-slate-700 flex items-center gap-2"
                     onPointerDown={(e) => { e.stopPropagation(); }}
                 >
                     <Tooltip content="Run Workflow (Ctrl+Enter)" placement="top">
@@ -325,7 +299,16 @@ const App: React.FC = () => {
                             {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
                         </button>
                     </Tooltip>
-                    <Tooltip content="Rest View" placement="left">
+                     <Tooltip content="Image History" placement="top">
+                        <button
+                            onClick={() => setIsHistoryPanelVisible(true)}
+                            className="flex items-center justify-center w-12 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+                            aria-label="Show Image History"
+                        >
+                            <HistoryIcon className="w-5 h-5" />
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Rest View" placement="top">
                         <button
                             type="button"
                             onClick={resetView}
@@ -335,16 +318,6 @@ const App: React.FC = () => {
                             {Math.round(viewTransform.scale * 100)}%
                         </button>
                     </Tooltip>
-                    {/* Keep commented for now                    
-                    <Tooltip content="Add Node (Ctrl+K)" placement="left">
-                        <button
-                            onClick={handleOpenAddNodeMenu}
-                            className="flex items-center justify-center w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
-                            aria-label="Add Node"
-                        >
-                            <PlusIcon className="w-5 h-5" />
-                        </button>
-                    </Tooltip> */}
                 </div>
 
                 {addNodeMenu?.visible && (
@@ -356,6 +329,12 @@ const App: React.FC = () => {
                     />
                 )}
             </div>
+            {isHistoryPanelVisible && (
+                <HistoryPanel
+                    history={history}
+                    onClose={() => setIsHistoryPanelVisible(false)}
+                />
+            )}
         </div>
     );
 };

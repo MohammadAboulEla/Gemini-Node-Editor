@@ -24,7 +24,8 @@ const normalizeImageInput = (input: any): { base64Image: string; mimeType: strin
 export const useWorkflow = (
     nodes: NodeType[],
     connections: ConnectionType[],
-    updateNodeData: (nodeId: string, data: Record<string, any>) => void
+    updateNodeData: (nodeId: string, data: Record<string, any>) => void,
+    addToHistory: (imageUrl: string) => void
 ) => {
     const [isWorkflowRunning, setIsWorkflowRunning] = useState(false);
 
@@ -247,6 +248,21 @@ export const useWorkflow = (
                 }
                 nodeOutputs[node.id] = output;
                 updateNodeData(node.id, { status: 'success' });
+
+                Object.values(output).forEach(portOutput => {
+                    if (portOutput && typeof portOutput === 'object') {
+                        let imageUrl: string | null = null;
+                        if (portOutput.imageUrl && typeof portOutput.imageUrl === 'string') {
+                            imageUrl = portOutput.imageUrl;
+                        } else if (portOutput.base64Image && portOutput.mimeType) {
+                            imageUrl = `data:${portOutput.mimeType};base64,${portOutput.base64Image}`;
+                        }
+                        if (imageUrl) {
+                            addToHistory(imageUrl);
+                        }
+                    }
+                });
+
             } catch (error) {
                 const message = error instanceof Error ? error.message : "Unknown error";
                 updateNodeData(node.id, { status: 'error', error: message });
@@ -255,7 +271,7 @@ export const useWorkflow = (
         }
     
         setIsWorkflowRunning(false);
-    }, [nodes, connections, updateNodeData]);
+    }, [nodes, connections, updateNodeData, addToHistory]);
 
     return { isWorkflowRunning, runWorkflow };
 };
