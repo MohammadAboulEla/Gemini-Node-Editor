@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { DownloadIcon } from './icons';
+import { DownloadIcon, EyeIcon } from './icons';
 
 interface HistoryItem {
     id: string;
@@ -9,9 +9,10 @@ interface HistoryItem {
 interface HistoryPanelProps {
     history: HistoryItem[];
     onClose: () => void;
+    onPreview: (imageUrl: string) => void;
 }
 
-const HistoryPanel: React.FC<HistoryPanelProps> = ({ history, onClose }) => {
+const HistoryPanel: React.FC<HistoryPanelProps> = ({ history, onClose, onPreview }) => {
     const panelRef = useRef<HTMLDivElement>(null);
 
     // Close on escape key
@@ -67,7 +68,14 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ history, onClose }) => {
                             {history.map((item) => (
                                 <div key={item.id} className="group relative rounded-lg overflow-hidden border-2 border-slate-700">
                                     <img src={item.imageUrl} alt="Generated image" className="aspect-square w-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <button
+                                            onClick={() => onPreview(item.imageUrl)}
+                                            className="p-3 bg-slate-700 text-white rounded-full hover:bg-slate-600 transition-colors"
+                                            aria-label="Preview image"
+                                        >
+                                            <EyeIcon className="w-5 h-5" />
+                                        </button>
                                         <a
                                             href={item.imageUrl}
                                             download={`gemini-node-editor-${item.id}.png`}

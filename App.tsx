@@ -6,6 +6,7 @@ import AddNodeMenu from './components/AddNodeMenu';
 import Tooltip from './components/Tooltip';
 import { PlusIcon, PlayIcon, SpinnerIcon, HistoryIcon } from './components/icons';
 import HistoryPanel from './components/HistoryPanel';
+import ImagePreviewModal from './components/ImagePreviewModal';
 
 import { useViewTransform } from './hooks/useViewTransform';
 import { useEditor } from './hooks/useEditor';
@@ -77,6 +78,8 @@ const App: React.FC = () => {
     const [addNodeMenu, setAddNodeMenu] = useState<AddNodeMenuState | null>(null);
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [isHistoryPanelVisible, setIsHistoryPanelVisible] = useState(false);
+    const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+
 
     const {
         viewTransform, isPanning, handleWheel, handlePanMouseDown, handlePanMouseMove,
@@ -333,6 +336,13 @@ const App: React.FC = () => {
                 <HistoryPanel
                     history={history}
                     onClose={() => setIsHistoryPanelVisible(false)}
+                    onPreview={setPreviewImageUrl}
+                />
+            )}
+            {previewImageUrl && (
+                <ImagePreviewModal
+                    imageUrl={previewImageUrl}
+                    onClose={() => setPreviewImageUrl(null)}
                 />
             )}
         </div>
