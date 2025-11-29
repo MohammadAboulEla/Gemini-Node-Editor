@@ -6,6 +6,9 @@ if (!process.env.API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai_model = 'gemini-2.5-flash';
+// const ai_image_model =  'gemini-3-pro-image-preview';
+const ai_image_model =  'gemini-2.5-flash-image';
 
 export const editImage = async (base64Image: string, mimeType: string, prompt: string): Promise<{imageUrl: string, text: string}> => {
     try {
@@ -21,7 +24,7 @@ export const editImage = async (base64Image: string, mimeType: string, prompt: s
         };
 
         const response: GenerateContentResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image-preview',
+            model: ai_image_model,
             contents: {
                 parts: [imagePart, textPart],
             },
@@ -79,7 +82,7 @@ export const mixImages = async (sourceImage: {base64Image: string, mimeType: str
         };
 
         const response: GenerateContentResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image-preview',
+            model: ai_image_model,
             contents: {
                 parts: [
                     { text: "The first image is the source. The second image is for reference." },
@@ -139,7 +142,7 @@ export const generateWithStyle = async (refImage: {base64Image: string, mimeType
         };
 
         const response: GenerateContentResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image-preview',
+            model: ai_image_model,
             contents: {
                 parts: [
                     instructionPart,
@@ -184,7 +187,7 @@ export const generateWithStyle = async (refImage: {base64Image: string, mimeType
 export const generateImage = async (prompt: string): Promise<{imageUrl: string}> => {
     try {
         const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
+            model: ai_image_model,
             prompt: prompt,
             config: {
               numberOfImages: 1,
@@ -236,7 +239,7 @@ export const describeImage = async (base64Image: string, mimeType: string, mode:
         };
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: ai_model,
             contents: {
                 parts: [imagePart, textPart],
             },
