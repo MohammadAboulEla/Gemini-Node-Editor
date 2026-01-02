@@ -184,24 +184,47 @@ export const generateWithStyle = async (refImage: {base64Image: string, mimeType
 };
 
 
-export const generateImage = async (prompt: string): Promise<{imageUrl: string}> => {
+export const generateImage = async (prompt: string): Promise<{imageUrl: string,  text: string}> => {
+
     try {
-        const response = await ai.models.generateImages({
+        const instructionPart = {
+            text: "Generate a new image based on the following prompt.",
+        };
+
+        const textPart = {
+            text: prompt,
+        };
+
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: ai_image_model,
-            prompt: prompt,
+            contents: {
+                parts: [instructionPart,textPart],
+            },
             config: {
-              numberOfImages: 1,
-              outputMimeType: 'image/png',
+                responseModalities: [Modality.IMAGE, Modality.TEXT],
             },
         });
 
-        if (!response.generatedImages || response.generatedImages.length === 0) {
+        if (!response.candidates || response.candidates.length === 0 || !response.candidates[0].content || !response.candidates[0].content.parts) {
+            throw new Error("API returned an invalid or empty response. This could be due to content safety filters.");
+        }
+        let resultImageUrl = '';
+        let resultText = 'No text response from model.';
+
+        for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData) {
+                const base64ImageBytes: string = part.inlineData.data;
+                resultImageUrl = `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+            } else if (part.text) {
+                resultText = part.text;
+            }
+        }
+        
+        if (!resultImageUrl) {
             throw new Error("API did not return an image.");
         }
 
-        const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-        const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
-        return { imageUrl };
+        return { imageUrl: resultImageUrl, text: resultText };
 
     } catch (error) {
         console.error("Error generating image with Gemini API:", error);

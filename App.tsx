@@ -245,6 +245,7 @@ const App: React.FC = () => {
 
     return (
         <div className="w-screen h-screen flex bg-slate-900 text-white">
+
             <div
                 ref={editorRef}
                 className="flex-grow h-full overflow-hidden relative cursor-default"
@@ -255,8 +256,12 @@ const App: React.FC = () => {
                 onDoubleClick={handleBackgroundDoubleClick}
                 onContextMenu={handleContextMenu}
             >
-                <div className="absolute inset-0 bg-slate-900 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] background-grid"></div>
+                <div className="absolute inset-0 bg-slate-900 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] background-grid">
+                    <p className="text-gray-600 text-sm">
+                        Copyright © 2026 Mohammad Aboul-Ela
+                    </p>
 
+                </div>
                 <div
                     className="absolute top-0 left-0"
                     style={{
@@ -264,6 +269,7 @@ const App: React.FC = () => {
                         transformOrigin: '0 0'
                     }}
                 >
+
                     <svg ref={svgRef} className="absolute top-0 left-0 pointer-events-none" style={{ overflow: 'visible' }}>
                         <g className="pointer-events-auto">
                             {connections.map(conn => {
@@ -302,7 +308,7 @@ const App: React.FC = () => {
                             {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
                         </button>
                     </Tooltip>
-                     <Tooltip content="Image History" placement="top">
+                    <Tooltip content="Image History" placement="top">
                         <button
                             onClick={() => setIsHistoryPanelVisible(true)}
                             className="flex items-center justify-center w-12 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
