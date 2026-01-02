@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon } from './icons';
 import createNode from '../nodeFactory';
 
 interface AddNodeMenuProps {
@@ -13,6 +13,7 @@ interface AddNodeMenuProps {
 const NODE_OPTIONS = [
     { type: EnumNodeType.ImageLoader, title: 'Load Image', icon: ImageIcon },
     { type: EnumNodeType.Prompt, title: 'Prompt', icon: TextIcon },
+    { type: EnumNodeType.SolidColor, title: 'Solid Color', icon: SwatchIcon },
     { type: EnumNodeType.ImageGenerator, title: 'Gemini Image', icon: MagicWandIcon },
     { type: EnumNodeType.ImageStitcher, title: 'Stitch Images', icon: StitchIcon },
     { type: EnumNodeType.ImageDescriber, title: 'Describe Image', icon: DescribeIcon },
@@ -85,7 +86,7 @@ const AddNodeMenu: React.FC<AddNodeMenuProps> = ({ position, onSelect, onClose, 
                     className="w-full px-2 py-1 bg-slate-900 border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                 />
             </div>
-            <ul className="max-h-60 overflow-y-auto">
+            <ul className="max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-600">
                 {filteredNodes.length > 0 ? (
                     filteredNodes.map(node => (
                         <li key={node.type}>

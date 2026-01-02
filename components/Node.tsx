@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Node as NodeType, NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
 import Tooltip from './Tooltip';
 
@@ -11,6 +10,7 @@ import { ImageGeneratorNode } from './nodes/ImageGeneratorNode';
 import { PreviewNode } from './nodes/PreviewNode';
 import { ImageStitcherNode } from './nodes/ImageStitcherNode';
 import { ImageDescriberNode } from './nodes/ImageDescriberNode';
+import { SolidColorNode } from './nodes/SolidColorNode';
 
 interface NodeProps {
     node: NodeType;
@@ -37,6 +37,8 @@ const NodeContent: React.FC<NodeContentProps> = (props) => {
             return <ImageStitcherNode {...props} />;
         case EnumNodeType.ImageDescriber:
             return <ImageDescriberNode {...props} />;
+        case EnumNodeType.SolidColor:
+            return <SolidColorNode {...props} />;
         default:
             return null;
     }
@@ -49,6 +51,7 @@ const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
     [EnumNodeType.ImageStitcher]: StitchIcon,
     [EnumNodeType.ImageDescriber]: DescribeIcon,
     [EnumNodeType.Preview]: EyeIcon,
+    [EnumNodeType.SolidColor]: SwatchIcon,
 }
 
 const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, setPortRef, updateNodeData, updateNode }) => {

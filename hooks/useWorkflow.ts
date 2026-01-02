@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType } from '../types';
 import { editImage, generateImage, describeImage, DescribeMode, mixImages, generateWithStyle } from '../services/geminiService';
@@ -82,6 +81,32 @@ export const useWorkflow = (
                         output = { [node.outputs[0].id]: node.data };
                         break;
     
+                    case EnumNodeType.SolidColor:
+                        const { color = '#06b6d4', aspectRatio = '1:1' } = node.data;
+                        const [wRatio, hRatio] = aspectRatio.split(':').map(Number);
+                        
+                        const baseSize = 512;
+                        const width = wRatio >= hRatio ? baseSize : (baseSize * wRatio) / hRatio;
+                        const height = hRatio >= wRatio ? baseSize : (baseSize * hRatio) / wRatio;
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) throw new Error("Canvas context failed.");
+                        
+                        ctx.fillStyle = color;
+                        ctx.fillRect(0, 0, width, height);
+                        
+                        const dataUrl = canvas.toDataURL('image/png');
+                        const [header, base64] = dataUrl.split(',');
+                        const mime = header.match(/data:(.*);base64/)?.[1] || 'image/png';
+                        
+                        const solidResult = { base64Image: base64, mimeType: mime };
+                        updateNodeData(node.id, solidResult);
+                        output = { 'image-output': solidResult };
+                        break;
+
                     case EnumNodeType.ImageGenerator:
                         const mode = node.data.mode || 'edit';
                         const promptInput = inputs['prompt-input'];
@@ -177,25 +202,25 @@ export const useWorkflow = (
                         img2.src = `data:${img2Data.mimeType};base64,${img2Data.base64Image}`;
                         await Promise.all([p1, p2]);
 
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        if (!ctx) throw new Error("Canvas context failed.");
+                        const canvasS = document.createElement('canvas');
+                        const ctxS = canvasS.getContext('2d');
+                        if (!ctxS) throw new Error("Canvas context failed.");
 
                         if (node.data.stitchMode === 'horizontal') {
-                            canvas.width = img1.width + img2.width;
-                            canvas.height = Math.max(img1.height, img2.height);
-                            ctx.drawImage(img1, 0, 0);
-                            ctx.drawImage(img2, img1.width, 0);
+                            canvasS.width = img1.width + img2.width;
+                            canvasS.height = Math.max(img1.height, img2.height);
+                            ctxS.drawImage(img1, 0, 0);
+                            ctxS.drawImage(img2, img1.width, 0);
                         } else {
-                            canvas.width = Math.max(img1.width, img2.width);
-                            canvas.height = img1.height + img2.height;
-                            ctx.drawImage(img1, 0, 0);
-                            ctx.drawImage(img2, 0, img1.height);
+                            canvasS.width = Math.max(img1.width, img2.width);
+                            canvasS.height = img1.height + img2.height;
+                            ctxS.drawImage(img1, 0, 0);
+                            ctxS.drawImage(img2, 0, img1.height);
                         }
-                        const url = canvas.toDataURL('image/png');
-                        const [header, base64] = url.split(',');
-                        const newMime = header.match(/data:(.*);base64/)?.[1] || 'image/png';
-                        const stitchResult = { base64Image: base64, mimeType: newMime };
+                        const url = canvasS.toDataURL('image/png');
+                        const [headerS, base64S] = url.split(',');
+                        const newMime = headerS.match(/data:(.*);base64/)?.[1] || 'image/png';
+                        const stitchResult = { base64Image: base64S, mimeType: newMime };
                         updateNodeData(node.id, stitchResult);
                         output = { 'image-output': stitchResult };
                         break;

@@ -5,6 +5,7 @@ export enum NodeType {
   Preview = 'PREVIEW',
   ImageStitcher = 'IMAGE_STITCHER',
   ImageDescriber = 'IMAGE_DESCRIBER',
+  SolidColor = 'SOLID_COLOR',
 }
 
 export interface Point {

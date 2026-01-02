@@ -63,6 +63,16 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 data: { status: 'idle', cache: {}, describeMode: 'normal' },
                 minHeight: 180,
             };
+        case EnumNodeType.SolidColor:
+            return {
+                ...baseNode,
+                title: 'Solid Color',
+                inputs: [],
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
+                data: { color: '#06b6d4', aspectRatio: '1:1' },
+                height: 180,
+                minHeight: 180,
+            };
         case EnumNodeType.Preview:
             return {
                 ...baseNode,
