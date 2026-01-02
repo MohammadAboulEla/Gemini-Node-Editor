@@ -107,6 +107,116 @@ export const useWorkflow = (
                         output = { 'image-output': solidResult };
                         break;
 
+                    case EnumNodeType.CropImage:
+                        const cropImgData = normalizeImageInput(inputs['image-input']);
+                        if (!cropImgData) throw new Error("Missing image input.");
+
+                        const { aspectRatio: cropRatio = '1:1', direction: cropDir = 'center' } = node.data;
+                        const [crW, crH] = cropRatio.split(':').map(Number);
+                        const targetRatio = crW / crH;
+
+                        const imgToCrop = new Image();
+                        await new Promise((res, rej) => {
+                            imgToCrop.onload = res;
+                            imgToCrop.onerror = rej;
+                            imgToCrop.src = `data:${cropImgData.mimeType};base64,${cropImgData.base64Image}`;
+                        });
+
+                        const srcW = imgToCrop.width;
+                        const srcH = imgToCrop.height;
+                        const srcRatio = srcW / srcH;
+
+                        let cropW, cropH;
+                        if (srcRatio > targetRatio) {
+                            cropH = srcH;
+                            cropW = srcH * targetRatio;
+                        } else {
+                            cropW = srcW;
+                            cropH = srcW / targetRatio;
+                        }
+
+                        let srcX = (srcW - cropW) / 2;
+                        let srcY = (srcH - cropH) / 2;
+
+                        if (cropDir === 'top') srcY = 0;
+                        if (cropDir === 'bottom') srcY = srcH - cropH;
+                        if (cropDir === 'left') srcX = 0;
+                        if (cropDir === 'right') srcX = srcW - cropW;
+
+                        const cropCanvas = document.createElement('canvas');
+                        cropCanvas.width = cropW;
+                        cropCanvas.height = cropH;
+                        const cropCtx = cropCanvas.getContext('2d');
+                        if (!cropCtx) throw new Error("Canvas context failed.");
+
+                        cropCtx.drawImage(imgToCrop, srcX, srcY, cropW, cropH, 0, 0, cropW, cropH);
+
+                        const cropDataUrl = cropCanvas.toDataURL('image/png');
+                        const [cropHeader, cropBase64] = cropDataUrl.split(',');
+                        const cropMime = cropHeader.match(/data:(.*);base64/)?.[1] || 'image/png';
+
+                        const cropResult = { base64Image: cropBase64, mimeType: cropMime };
+                        updateNodeData(node.id, cropResult);
+                        output = { 'image-output': cropResult };
+                        break;
+
+                    case EnumNodeType.Padding:
+                        const padImgData = normalizeImageInput(inputs['image-input']);
+                        if (!padImgData) throw new Error("Missing image input.");
+
+                        const { aspectRatio: padRatioStr = '1:1', direction: padDir = 'center', color: padColor = '#000000' } = node.data;
+                        const [pR_W, pR_H] = padRatioStr.split(':').map(Number);
+                        const padTargetRatio = pR_W / pR_H;
+
+                        const imgToPad = new Image();
+                        await new Promise((res, rej) => {
+                            imgToPad.onload = res;
+                            imgToPad.onerror = rej;
+                            imgToPad.src = `data:${padImgData.mimeType};base64,${padImgData.base64Image}`;
+                        });
+
+                        const pSrcW = imgToPad.width;
+                        const pSrcH = imgToPad.height;
+                        const pSrcRatio = pSrcW / pSrcH;
+
+                        let targetW, targetH;
+                        if (pSrcRatio > padTargetRatio) {
+                            // Image is wider than target ratio - add padding to top/bottom
+                            targetW = pSrcW;
+                            targetH = pSrcW / padTargetRatio;
+                        } else {
+                            // Image is taller than target ratio - add padding to sides
+                            targetH = pSrcH;
+                            targetW = pSrcH * padTargetRatio;
+                        }
+
+                        let destX = (targetW - pSrcW) / 2;
+                        let destY = (targetH - pSrcH) / 2;
+
+                        if (padDir === 'top') destY = 0;
+                        if (padDir === 'bottom') destY = targetH - pSrcH;
+                        if (padDir === 'left') destX = 0;
+                        if (padDir === 'right') destX = targetW - pSrcW;
+
+                        const padCanvas = document.createElement('canvas');
+                        padCanvas.width = targetW;
+                        padCanvas.height = targetH;
+                        const padCtx = padCanvas.getContext('2d');
+                        if (!padCtx) throw new Error("Canvas context failed.");
+
+                        padCtx.fillStyle = padColor;
+                        padCtx.fillRect(0, 0, targetW, targetH);
+                        padCtx.drawImage(imgToPad, destX, destY);
+
+                        const padDataUrl = padCanvas.toDataURL('image/png');
+                        const [padHeader, padBase64] = padDataUrl.split(',');
+                        const padMime = padHeader.match(/data:(.*);base64/)?.[1] || 'image/png';
+
+                        const padResult = { base64Image: padBase64, mimeType: padMime };
+                        updateNodeData(node.id, padResult);
+                        output = { 'image-output': padResult };
+                        break;
+
                     case EnumNodeType.ImageGenerator:
                         const mode = node.data.mode || 'edit';
                         const promptInput = inputs['prompt-input'];

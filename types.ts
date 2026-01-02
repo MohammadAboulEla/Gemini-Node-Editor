@@ -6,6 +6,8 @@ export enum NodeType {
   ImageStitcher = 'IMAGE_STITCHER',
   ImageDescriber = 'IMAGE_DESCRIBER',
   SolidColor = 'SOLID_COLOR',
+  CropImage = 'CROP_IMAGE',
+  Padding = 'PADDING',
 }
 
 export interface Point {

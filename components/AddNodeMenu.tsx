@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon, ScissorsIcon, PaddingIcon } from './icons';
 import createNode from '../nodeFactory';
 
 interface AddNodeMenuProps {
@@ -14,6 +14,8 @@ const NODE_OPTIONS = [
     { type: EnumNodeType.ImageLoader, title: 'Load Image', icon: ImageIcon },
     { type: EnumNodeType.Prompt, title: 'Prompt', icon: TextIcon },
     { type: EnumNodeType.SolidColor, title: 'Solid Color', icon: SwatchIcon },
+    { type: EnumNodeType.CropImage, title: 'Crop Image', icon: ScissorsIcon },
+    { type: EnumNodeType.Padding, title: 'Add Padding', icon: PaddingIcon },
     { type: EnumNodeType.ImageGenerator, title: 'Gemini Image', icon: MagicWandIcon },
     { type: EnumNodeType.ImageStitcher, title: 'Stitch Images', icon: StitchIcon },
     { type: EnumNodeType.ImageDescriber, title: 'Describe Image', icon: DescribeIcon },

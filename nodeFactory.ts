@@ -73,6 +73,26 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 height: 180,
                 minHeight: 180,
             };
+        case EnumNodeType.CropImage:
+            return {
+                ...baseNode,
+                title: 'Crop Image',
+                inputs: [{ id: 'image-input', type: 'input', dataType: 'image' }],
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
+                data: { aspectRatio: '1:1', direction: 'center' },
+                height: 200,
+                minHeight: 200,
+            };
+        case EnumNodeType.Padding:
+            return {
+                ...baseNode,
+                title: 'Add Padding',
+                inputs: [{ id: 'image-input', type: 'input', dataType: 'image' }],
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
+                data: { aspectRatio: '1:1', direction: 'center', color: '#000000' },
+                height: 260,
+                minHeight: 260,
+            };
         case EnumNodeType.Preview:
             return {
                 ...baseNode,

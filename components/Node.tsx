@@ -1,6 +1,6 @@
 import React from 'react';
 import { Node as NodeType, NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
 import Tooltip from './Tooltip';
 
@@ -11,6 +11,8 @@ import { PreviewNode } from './nodes/PreviewNode';
 import { ImageStitcherNode } from './nodes/ImageStitcherNode';
 import { ImageDescriberNode } from './nodes/ImageDescriberNode';
 import { SolidColorNode } from './nodes/SolidColorNode';
+import { CropImageNode } from './nodes/CropImageNode';
+import { PaddingNode } from './nodes/PaddingNode';
 
 interface NodeProps {
     node: NodeType;
@@ -39,6 +41,10 @@ const NodeContent: React.FC<NodeContentProps> = (props) => {
             return <ImageDescriberNode {...props} />;
         case EnumNodeType.SolidColor:
             return <SolidColorNode {...props} />;
+        case EnumNodeType.CropImage:
+            return <CropImageNode {...props} />;
+        case EnumNodeType.Padding:
+            return <PaddingNode {...props} />;
         default:
             return null;
     }
@@ -52,6 +58,8 @@ const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
     [EnumNodeType.ImageDescriber]: DescribeIcon,
     [EnumNodeType.Preview]: EyeIcon,
     [EnumNodeType.SolidColor]: SwatchIcon,
+    [EnumNodeType.CropImage]: ScissorsIcon,
+    [EnumNodeType.Padding]: PaddingIcon,
 }
 
 const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, setPortRef, updateNodeData, updateNode }) => {
