@@ -69,7 +69,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
 
     return (
         <div
-            className={`absolute bg-slate-800 border-2 rounded-lg shadow-xl flex flex-col transition-colors ${isSelected ? 'border-cyan-500' : 'border-slate-700'}`}
+            className={`absolute bg-slate-800 border-2 rounded-lg shadow-xl flex flex-col transition-colors select-none ${isSelected ? 'border-cyan-500' : 'border-slate-700'}`}
             style={{
                 left: node.position.x,
                 top: node.position.y,

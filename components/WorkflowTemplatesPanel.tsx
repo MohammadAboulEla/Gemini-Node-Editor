@@ -17,8 +17,37 @@ const TemplateIcon: React.FC<{className?: string}> = ({ className }) => (
 
 const TEMPLATES: WorkflowTemplate[] = [
     {
+        id: 'simple-generate',
+        title: 'Simple Image Generation',
+        description: 'Generate an image from scratch using a text prompt.',
+        nodes: [
+            {
+                id: 'gen-prompt', type: EnumNodeType.Prompt, position: { x: 50, y: 150 }, title: 'Prompt',
+                width: 256, minWidth: 256, minHeight: 100,
+                inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'A futuristic city at sunset, synthwave style.' }
+            },
+            {
+                id: 'gen-node', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 150 }, title: 'Gemini Generator',
+                width: 256, resizable: false,
+                inputs: [{ id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' }],
+                outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }],
+                data: { status: 'idle', mode: 'generate' }
+            },
+            {
+                id: 'gen-prev', type: EnumNodeType.Preview, position: { x: 650, y: 100 }, title: 'Result Preview',
+                width: 400, height: 400, minWidth: 256, minHeight: 220,
+                inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }],
+                outputs: [], data: {}
+            }
+        ],
+        connections: [
+            { id: 'gc1', fromNodeId: 'gen-prompt', fromPortId: 'prompt-output', toNodeId: 'gen-node', toPortId: 'prompt-input' },
+            { id: 'gc2', fromNodeId: 'gen-node', fromPortId: 'result-output', toNodeId: 'gen-prev', toPortId: 'result-input' }
+        ]
+    },
+    {
         id: 'standard-edit',
-        title: 'Standard Image Edit (Default)',
+        title: 'Standard Image Edit',
         description: 'The standard workflow for modifying existing images with Gemini.',
         nodes: [
             {
@@ -29,7 +58,7 @@ const TEMPLATES: WorkflowTemplate[] = [
             {
                 id: 'node-2', type: EnumNodeType.Prompt, position: { x: 20, y: 370 }, title: 'Prompt',
                 width: 256, minWidth: 256, minHeight: 100,
-                inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: {}
+                inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'Add a small red dragon sitting on the character\'s shoulder.' }
             },
             {
                 id: 'node-3', type: EnumNodeType.ImageGenerator, position: { x: 310, y: 250 }, title: 'Gemini Image',
@@ -55,6 +84,78 @@ const TEMPLATES: WorkflowTemplate[] = [
         ]
     },
     {
+        id: 'match-style',
+        title: 'Match Image Style',
+        description: 'Use a reference image to transfer its artistic style to a new generation.',
+        nodes: [
+            {
+                id: 'style-ref', type: EnumNodeType.ImageLoader, position: { x: 50, y: 100 }, title: 'Reference Style',
+                width: 256, height: 220, inputs: [], outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], data: {}
+            },
+            {
+                id: 'style-prompt', type: EnumNodeType.Prompt, position: { x: 50, y: 350 }, title: 'Subject Prompt',
+                width: 256, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'A peaceful forest with a hidden cottage.' }
+            },
+            {
+                id: 'style-gen', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 200 }, title: 'Style Transfer',
+                width: 256, resizable: false, 
+                inputs: [
+                    { id: 'ref-image-input', type: 'input', dataType: 'image', label: 'Reference Image' },
+                    { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' }
+                ],
+                outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }], data: { status: 'idle', mode: 'style' }
+            },
+            {
+                id: 'style-prev', type: EnumNodeType.Preview, position: { x: 650, y: 150 }, title: 'Styled Result',
+                width: 400, height: 400, inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }], outputs: [], data: {}
+            }
+        ],
+        connections: [
+            { id: 'sc1', fromNodeId: 'style-ref', fromPortId: 'image-output', toNodeId: 'style-gen', toPortId: 'ref-image-input' },
+            { id: 'sc2', fromNodeId: 'style-prompt', fromPortId: 'prompt-output', toNodeId: 'style-gen', toPortId: 'prompt-input' },
+            { id: 'sc3', fromNodeId: 'style-gen', fromPortId: 'result-output', toNodeId: 'style-prev', toPortId: 'result-input' }
+        ]
+    },
+    {
+        id: 'mix-images',
+        title: 'Mix Two Images',
+        description: 'Blend a source image with a reference image guided by a prompt.',
+        nodes: [
+            {
+                id: 'mix-src', type: EnumNodeType.ImageLoader, position: { x: 50, y: 50 }, title: 'Source Subject',
+                width: 256, height: 220, inputs: [], outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], data: {}
+            },
+            {
+                id: 'mix-ref', type: EnumNodeType.ImageLoader, position: { x: 50, y: 280 }, title: 'Reference/Context',
+                width: 256, height: 220, inputs: [], outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], data: {}
+            },
+            {
+                id: 'mix-prompt', type: EnumNodeType.Prompt, position: { x: 50, y: 510 }, title: 'Mixing Instructions',
+                width: 256, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'Place the object from the first image into the environment of the second image with matching lighting.' }
+            },
+            {
+                id: 'mix-gen', type: EnumNodeType.ImageGenerator, position: { x: 400, y: 250 }, title: 'Gemini Mixer',
+                width: 256, resizable: false, 
+                inputs: [
+                    { id: 'image-input', type: 'input', dataType: 'image', label: 'Source Image' },
+                    { id: 'ref-image-input', type: 'input', dataType: 'image', label: 'Reference Image' },
+                    { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' }
+                ],
+                outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }], data: { status: 'idle', mode: 'mix' }
+            },
+            {
+                id: 'mix-prev', type: EnumNodeType.Preview, position: { x: 750, y: 200 }, title: 'Mixed Result',
+                width: 450, height: 450, inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }], outputs: [], data: {}
+            }
+        ],
+        connections: [
+            { id: 'mc1', fromNodeId: 'mix-src', fromPortId: 'image-output', toNodeId: 'mix-gen', toPortId: 'image-input' },
+            { id: 'mc2', fromNodeId: 'mix-ref', fromPortId: 'image-output', toNodeId: 'mix-gen', toPortId: 'ref-image-input' },
+            { id: 'mc3', fromNodeId: 'mix-prompt', fromPortId: 'prompt-output', toNodeId: 'mix-gen', toPortId: 'prompt-input' },
+            { id: 'mc4', fromNodeId: 'mix-gen', fromPortId: 'result-output', toNodeId: 'mix-prev', toPortId: 'result-input' }
+        ]
+    },
+    {
         id: 'product-backdrop',
         title: 'Product Studio',
         description: 'Replace backgrounds with a solid color and regenerate the scene.',
@@ -65,7 +166,7 @@ const TEMPLATES: WorkflowTemplate[] = [
             },
             {
                 id: 'prod-prompt', type: EnumNodeType.Prompt, position: { x: 20, y: 280 }, title: 'Product Prompt',
-                width: 256, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'A luxury watch sitting on this background with realistic shadows.' }
+                width: 256, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'A professional photo of a coffee mug sitting on this surface with soft shadows.' }
             },
             {
                 id: 'prod-gen', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 150 }, title: 'Gemini Generator',
@@ -100,6 +201,12 @@ const TEMPLATES: WorkflowTemplate[] = [
                 outputs: [{ id: 'text-output', type: 'output', dataType: 'text' }],
                 data: { status: 'idle', describeMode: 'detailed' }
             },
+            {
+                id: 'node-3', type: EnumNodeType.Preview, position: { x: 650, y: 150 }, title: 'Result Preview',
+                width: 400, height: 400, minWidth: 256, minHeight: 220,
+                inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }],
+                outputs: [], data: {}
+            }
         ],
         connections: [
             { id: 'conn-1', fromNodeId: 'node-1', fromPortId: 'image-output', toNodeId: 'node-2', toPortId: 'image-input' },
@@ -109,7 +216,7 @@ const TEMPLATES: WorkflowTemplate[] = [
     {
         id: 'aspect-ratio-fix',
         title: 'Image Padding',
-        description: 'Pad images to square or 9:16.',
+        description: 'Pad images to square or 9:16 for social media.',
         nodes: [
             {
                 id: 'pad-load', type: EnumNodeType.ImageLoader, position: { x: 50, y: 150 }, title: 'Source Image',
@@ -155,8 +262,6 @@ const WorkflowTemplatesPanel: React.FC<WorkflowTemplatesPanelProps> = ({ onClose
     };
 
     const handleSelect = (template: WorkflowTemplate) => {
-        // We close the panel immediately for a faster feel.
-        // App.tsx handles the visual "building" process asynchronously.
         onLoadTemplate(template);
         onClose();
     };
