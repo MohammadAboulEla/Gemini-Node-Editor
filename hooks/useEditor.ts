@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, MouseEvent, useRef } from 'react';
-import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, DraggingNodeState, ConnectingState, PortPositions, ResizingNodeState } from '../types';
+import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, DraggingNodeState, ConnectingState, PortPositions, ResizingNodeState, SelectionBox, Point } from '../types';
 import createNode from '../nodeFactory';
 
 export const useEditor = (
@@ -14,8 +14,9 @@ export const useEditor = (
     const [draggingNode, setDraggingNode] = useState<DraggingNodeState | null>(null);
     const [resizingNode, setResizingNode] = useState<ResizingNodeState | null>(null);
     const [connecting, setConnecting] = useState<ConnectingState | null>(null);
+    const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
 
-    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
     const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
 
     const portRefs = useRef<Record<string, HTMLDivElement>>({});
@@ -45,7 +46,6 @@ export const useEditor = (
         } else {
             delete portRefs.current[key];
         }
-        // Defer update to allow DOM to settle
         requestAnimationFrame(updatePortPositions);
     }, [updatePortPositions]);
 
@@ -62,47 +62,61 @@ export const useEditor = (
     }, []);
     
     const deselectAll = useCallback(() => {
-        setSelectedNodeId(null);
+        setSelectedNodeIds([]);
         setSelectedConnectionId(null);
     }, []);
 
     const handleNodeMouseDown = useCallback((e: MouseEvent<HTMLDivElement>, nodeId: string) => {
         e.preventDefault();
         e.stopPropagation();
-        setSelectedNodeId(nodeId);
-        setSelectedConnectionId(null);
-        const node = nodes.find(n => n.id === nodeId);
-        if (node) {
-            const worldMousePos = getPositionInWorldSpace({ x: e.clientX, y: e.clientY });
-            setDraggingNode({
-                id: nodeId,
-                offset: {
-                    x: worldMousePos.x - node.position.x,
-                    y: worldMousePos.y - node.position.y
-                }
-            });
+        
+        const isCtrlPressed = e.ctrlKey || e.metaKey;
+        let newSelection = [...selectedNodeIds];
+
+        if (isCtrlPressed) {
+            if (newSelection.includes(nodeId)) {
+                newSelection = newSelection.filter(id => id !== nodeId);
+            } else {
+                newSelection.push(nodeId);
+            }
+        } else {
+            if (!newSelection.includes(nodeId)) {
+                newSelection = [nodeId];
+            }
         }
-    }, [nodes, getPositionInWorldSpace]);
+
+        setSelectedNodeIds(newSelection);
+        setSelectedConnectionId(null);
+
+        const worldMousePos = getPositionInWorldSpace({ x: e.clientX, y: e.clientY });
+        const initialPositions: Record<string, Point> = {};
+        
+        nodes.forEach(n => {
+            if (newSelection.includes(n.id)) {
+                initialPositions[n.id] = { ...n.position };
+            }
+        });
+
+        setDraggingNode({
+            ids: newSelection,
+            initialPositions,
+            startMouseWorldPos: worldMousePos
+        });
+    }, [nodes, getPositionInWorldSpace, selectedNodeIds]);
 
     const handleResizeMouseDown = useCallback((e: MouseEvent<HTMLDivElement>, nodeId: string) => {
         e.preventDefault();
         e.stopPropagation();
         const node = nodes.find(n => n.id === nodeId);
-        // Only start resizing if the node is resizable
         if (node && node.resizable !== false) {
             const nodeElement = e.currentTarget.parentElement;
             if (nodeElement) {
                 const rect = nodeElement.getBoundingClientRect();
-
                 const currentWidth = node.width || (rect.width / viewTransform.scale);
                 const currentHeight = node.height || (rect.height / viewTransform.scale);
-
-                // Determine the effective initial size, ensuring it respects min dimensions
                 const initialWidth = Math.max(currentWidth, node.minWidth || 0);
                 const initialHeight = Math.max(currentHeight, node.minHeight || 0);
 
-                // If the node's dimensions are smaller than the minimums, update them immediately
-                // to prevent the "jump" on the first resize tick.
                 if (node.width !== initialWidth || node.height !== initialHeight) {
                     updateNode(node.id, { width: initialWidth, height: initialHeight });
                 }
@@ -161,18 +175,21 @@ export const useEditor = (
     }, [portPositions]);
 
     const handleConnectionClick = useCallback((connectionId: string) => {
-        setSelectedNodeId(null);
+        setSelectedNodeIds([]);
         setSelectedConnectionId(connectionId);
     }, []);
 
     const handleNodeDrag = useCallback((e: MouseEvent<HTMLDivElement>) => {
         if (!draggingNode) return;
         const worldMousePos = getPositionInWorldSpace({ x: e.clientX, y: e.clientY });
+        const dx = worldMousePos.x - draggingNode.startMouseWorldPos.x;
+        const dy = worldMousePos.y - draggingNode.startMouseWorldPos.y;
+
         setNodes(prevNodes => prevNodes.map(n =>
-            n.id === draggingNode.id
+            draggingNode.ids.includes(n.id)
                 ? { ...n, position: { 
-                    x: worldMousePos.x - draggingNode.offset.x,
-                    y: worldMousePos.y - draggingNode.offset.y
+                    x: draggingNode.initialPositions[n.id].x + dx,
+                    y: draggingNode.initialPositions[n.id].y + dy
                   } }
                 : n
         ));
@@ -215,7 +232,42 @@ export const useEditor = (
         }
     }, [nodes, createConnection]);
 
-    // Effect to clean up connections if a node or port is removed
+    const startSelectionBox = useCallback((e: MouseEvent) => {
+        setSelectionBox({
+            start: { x: e.clientX, y: e.clientY },
+            current: { x: e.clientX, y: e.clientY }
+        });
+    }, []);
+
+    const updateSelectionBox = useCallback((e: MouseEvent) => {
+        if (!selectionBox) return;
+        setSelectionBox(prev => prev ? ({ ...prev, current: { x: e.clientX, y: e.clientY } }) : null);
+
+        const startWorld = getPositionInWorldSpace(selectionBox.start);
+        const currentWorld = getPositionInWorldSpace({ x: e.clientX, y: e.clientY });
+
+        const xMin = Math.min(startWorld.x, currentWorld.x);
+        const xMax = Math.max(startWorld.x, currentWorld.x);
+        const yMin = Math.min(startWorld.y, currentWorld.y);
+        const yMax = Math.max(startWorld.y, currentWorld.y);
+
+        const newlySelected = nodes.filter(node => {
+            const nodeWidth = node.width || 256;
+            const nodeHeight = node.height || 200;
+            const nodeX = node.position.x;
+            const nodeY = node.position.y;
+
+            return nodeX < xMax && (nodeX + nodeWidth) > xMin &&
+                   nodeY < yMax && (nodeY + nodeHeight) > yMin;
+        }).map(n => n.id);
+
+        setSelectedNodeIds(newlySelected);
+    }, [selectionBox, nodes, getPositionInWorldSpace]);
+
+    const endSelectionBox = useCallback(() => {
+        setSelectionBox(null);
+    }, []);
+
     useEffect(() => {
         setConnections(prevConnections => {
             return prevConnections.filter(conn => {
@@ -232,11 +284,11 @@ export const useEditor = (
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Delete') {
-                if (selectedNodeId) {
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (selectedNodeIds.length > 0) {
                     e.preventDefault();
-                    setNodes(prev => prev.filter(n => n.id !== selectedNodeId));
-                    setSelectedNodeId(null);
+                    setNodes(prev => prev.filter(n => !selectedNodeIds.includes(n.id)));
+                    setSelectedNodeIds([]);
                 } else if (selectedConnectionId) {
                     e.preventDefault();
                     setConnections(prev => prev.filter(c => c.id !== selectedConnectionId));
@@ -246,7 +298,7 @@ export const useEditor = (
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedNodeId, selectedConnectionId]);
+    }, [selectedNodeIds, selectedConnectionId]);
 
     return {
         nodes,
@@ -256,9 +308,10 @@ export const useEditor = (
         draggingNode,
         connecting,
         setConnecting,
-        selectedNodeId,
+        selectedNodeIds,
         selectedConnectionId,
         portPositions,
+        selectionBox,
         updateNodeData,
         updateNode,
         deselectAll,
@@ -273,5 +326,8 @@ export const useEditor = (
         handleResizeMouseDown,
         handleNodeResize,
         stopResizingNode,
+        startSelectionBox,
+        updateSelectionBox,
+        endSelectionBox,
     }
 };

@@ -46,8 +46,9 @@ export interface Connection {
 }
 
 export interface DraggingNodeState {
-  id: string;
-  offset: Point;
+  ids: string[];
+  initialPositions: Record<string, Point>;
+  startMouseWorldPos: Point;
 }
 
 export interface ResizingNodeState {
@@ -61,6 +62,11 @@ export interface ConnectingState {
   fromNodeId: string;
   fromPortId: string;
   fromPortRect: DOMRect;
+}
+
+export interface SelectionBox {
+  start: Point; // Screen coordinates
+  current: Point; // Screen coordinates
 }
 
 export type PortPositions = Record<string, {

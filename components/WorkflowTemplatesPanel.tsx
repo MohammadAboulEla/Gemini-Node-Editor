@@ -108,8 +108,8 @@ const TEMPLATES: WorkflowTemplate[] = [
     },
     {
         id: 'aspect-ratio-fix',
-        title: 'Social Media Padding',
-        description: 'Pad images to square or 9:16 for social media posts.',
+        title: 'Image Padding',
+        description: 'Pad images to square or 9:16.',
         nodes: [
             {
                 id: 'pad-load', type: EnumNodeType.ImageLoader, position: { x: 50, y: 150 }, title: 'Source Image',

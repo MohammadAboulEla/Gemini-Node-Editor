@@ -13,7 +13,6 @@ import { useViewTransform } from './hooks/useViewTransform';
 import { useEditor } from './hooks/useEditor';
 import { useWorkflow } from './hooks/useWorkflow';
 
-// Start with a clean background
 const INITIAL_NODES: NodeType[] = [];
 const INITIAL_CONNECTIONS: ConnectionType[] = [];
 
@@ -58,10 +57,10 @@ const App: React.FC = () => {
     } = useViewTransform(editorRef);
 
     const {
-        nodes, setNodes, connections, setConnections, draggingNode, connecting, setConnecting, selectedNodeId, selectedConnectionId,
-        portPositions, updateNodeData, updateNode, deselectAll, handleNodeMouseDown, handlePortMouseDown,
+        nodes, setNodes, connections, setConnections, draggingNode, connecting, setConnecting, selectedNodeIds, selectedConnectionId,
+        portPositions, selectionBox, updateNodeData, updateNode, deselectAll, handleNodeMouseDown, handlePortMouseDown,
         handleConnectionClick, handleNodeDrag, stopDraggingNode, createConnection, addNode, setPortRef,
-        handleResizeMouseDown, handleNodeResize, stopResizingNode
+        handleResizeMouseDown, handleNodeResize, stopResizingNode, startSelectionBox, updateSelectionBox, endSelectionBox
     } = useEditor(INITIAL_NODES, INITIAL_CONNECTIONS, viewTransform, getPositionInWorldSpace);
 
     const addToHistory = useCallback((imageUrl: string) => {
@@ -76,29 +75,35 @@ const App: React.FC = () => {
     const { isWorkflowRunning, runWorkflow } = useWorkflow(nodes, connections, updateNodeData, addToHistory);
 
     const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
+        if (selectionBox) {
+            updateSelectionBox(e);
+            return;
+        }
+
         handlePanMouseMove(e);
         handleNodeDrag(e);
         handleNodeResize(e);
 
         if (connecting && tempConnectionPathRef.current && editorRef.current) {
             const editorRect = editorRef.current.getBoundingClientRect();
-
             const fromViewportX = connecting.fromPortRect.left + connecting.fromPortRect.width / 2 - editorRect.left;
             const fromViewportY = connecting.fromPortRect.top + connecting.fromPortRect.height / 2 - editorRect.top;
-
             const fromPoint = {
                 x: (fromViewportX - viewTransform.x) / viewTransform.scale,
                 y: (fromViewportY - viewTransform.y) / viewTransform.scale,
             };
-
             const toPoint = getPositionInWorldSpace({ x: e.clientX, y: e.clientY });
-
             const pathData = createPathData(fromPoint, toPoint);
             tempConnectionPathRef.current.setAttribute('d', pathData);
         }
-    }, [handlePanMouseMove, handleNodeDrag, handleNodeResize, connecting, viewTransform, getPositionInWorldSpace]);
+    }, [handlePanMouseMove, handleNodeDrag, handleNodeResize, connecting, viewTransform, getPositionInWorldSpace, selectionBox, updateSelectionBox]);
 
     const handleMouseUp = useCallback((e: MouseEvent<HTMLDivElement>) => {
+        if (selectionBox) {
+            endSelectionBox();
+            return;
+        }
+
         if (tempConnectionPathRef.current) {
             tempConnectionPathRef.current.remove();
             tempConnectionPathRef.current = null;
@@ -128,12 +133,16 @@ const App: React.FC = () => {
         stopResizingNode();
         setConnecting(null);
         stopPanning();
-    }, [connecting, portPositions, nodes, createConnection, stopDraggingNode, stopPanning, setConnecting, stopResizingNode]);
+    }, [connecting, portPositions, nodes, createConnection, stopDraggingNode, stopPanning, setConnecting, stopResizingNode, selectionBox, endSelectionBox]);
 
     const handleEditorMouseDown = (e: MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('background-grid')) {
-            deselectAll();
-            handlePanMouseDown(e);
+            if (e.ctrlKey || e.metaKey) {
+                startSelectionBox(e);
+            } else {
+                deselectAll();
+                handlePanMouseDown(e);
+            }
         }
     }
 
@@ -176,31 +185,18 @@ const App: React.FC = () => {
 
     const handleLoadTemplate = useCallback(async (template: WorkflowTemplate) => {
         setIsBuilding(true);
-        // Step 1: Clear current canvas completely
         setNodes([]);
         setConnections([]);
         resetView();
-
-        // Step 2: Sequential build process for visual effect
         await new Promise(resolve => setTimeout(resolve, 300));
-
-        // Deep clone template data
         const clonedNodes = JSON.parse(JSON.stringify(template.nodes));
         const clonedConnections = JSON.parse(JSON.stringify(template.connections));
-
-        // Add nodes one by one
         for (const node of clonedNodes) {
             setNodes(prev => [...prev, node]);
             await new Promise(resolve => setTimeout(resolve, 150));
         }
-
-        // Delay to allow port refs to settle in the DOM
         await new Promise(resolve => setTimeout(resolve, 200));
-
-        // Final Step: Apply connections
         setConnections(clonedConnections);
-        
-        // Ensure view is centered
         resetView();
         setIsBuilding(false);
     }, [setNodes, setConnections, resetView]);
@@ -222,7 +218,6 @@ const App: React.FC = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleOpenAddNodeMenu, runWorkflow, isWorkflowRunning]);
 
-    // Effect to manage the temporary connection path
     useEffect(() => {
         if (connecting && !tempConnectionPathRef.current && svgRef.current && editorRef.current) {
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -232,7 +227,6 @@ const App: React.FC = () => {
             tempConnectionPathRef.current = path;
         }
     }, [connecting, editorRef]);
-
 
     const getPortCenter = (nodeId: string, portId: string): Point | null => {
         const portKey = `${nodeId}:${portId}`;
@@ -245,9 +239,23 @@ const App: React.FC = () => {
         });
     };
 
+    const renderSelectionBox = () => {
+        if (!selectionBox) return null;
+        const left = Math.min(selectionBox.start.x, selectionBox.current.x);
+        const top = Math.min(selectionBox.start.y, selectionBox.current.y);
+        const width = Math.abs(selectionBox.start.x - selectionBox.current.x);
+        const height = Math.abs(selectionBox.start.y - selectionBox.current.y);
+        
+        return (
+            <div 
+                className="absolute border border-cyan-500 bg-cyan-500/10 pointer-events-none z-[10001]"
+                style={{ left, top, width, height }}
+            />
+        );
+    };
+
     return (
         <div className="w-screen h-screen flex bg-slate-900 text-white">
-
             <div
                 ref={editorRef}
                 className="flex-grow h-full overflow-hidden relative cursor-default"
@@ -264,11 +272,13 @@ const App: React.FC = () => {
                     </p>
                 </div>
 
+                {renderSelectionBox()}
+
                 {nodes.length === 0 && !isBuilding && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40 select-none transition-opacity duration-300">
                       <TemplateIcon className="w-16 h-16 text-slate-600 mb-4" />
                       <h2 className="text-xl font-bold text-slate-500">Empty Canvas</h2>
-                      <p className="text-slate-600">Select a template below or right-click to add nodes</p>
+                      <p className="text-slate-600">Select a template below or Ctrl+Drag to select</p>
                   </div>
                 )}
 
@@ -286,7 +296,6 @@ const App: React.FC = () => {
                         transformOrigin: '0 0'
                     }}
                 >
-
                     <svg ref={svgRef} className="absolute top-0 left-0 pointer-events-none" style={{ overflow: 'visible' }}>
                         <g className="pointer-events-auto">
                             {connections.map(conn => {
@@ -303,7 +312,7 @@ const App: React.FC = () => {
                     </svg>
 
                     {nodes.map(node => (
-                        <Node key={node.id} node={node} isSelected={node.id === selectedNodeId}
+                        <Node key={node.id} node={node} isSelected={selectedNodeIds.includes(node.id)}
                             onMouseDown={handleNodeMouseDown} onPortMouseDown={handlePortMouseDown}
                             onResizeMouseDown={handleResizeMouseDown}
                             setPortRef={setPortRef} updateNodeData={updateNodeData} updateNode={updateNode}
