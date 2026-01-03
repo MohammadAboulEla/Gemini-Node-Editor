@@ -22,7 +22,7 @@ const TEMPLATES: WorkflowTemplate[] = [
                 inputs: [], 
                 outputs: [{ id: 'styler-output', type: 'output', dataType: 'text' }], 
                 data: { 
-                    userPrompt: 'A futuristic city at sunset, synthwave style.', 
+                    userPrompt: 'A cute cat.', 
                     selectedFile: 'Art', 
                     selectedStyleName: 'none' 
                 }
