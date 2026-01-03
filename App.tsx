@@ -328,7 +328,7 @@ const App: React.FC = () => {
                     <Tooltip content="Workflow Templates" placement="top">
                         <button
                             onClick={() => setIsTemplatesPanelVisible(true)}
-                            className="flex items-center justify-center w-12 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors border-r border-slate-600 pr-2"
+                            className="flex items-center justify-center w-12 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
                             aria-label="Workflow Templates"
                             disabled={isBuilding}
                         >
