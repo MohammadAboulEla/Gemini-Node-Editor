@@ -4,49 +4,18 @@ import Node from './components/Node';
 import Connection from './components/Connection';
 import AddNodeMenu from './components/AddNodeMenu';
 import Tooltip from './components/Tooltip';
-import { PlusIcon, PlayIcon, SpinnerIcon, HistoryIcon } from './components/icons';
+import { PlusIcon, PlayIcon, SpinnerIcon, HistoryIcon, TemplateIcon } from './components/icons';
 import HistoryPanel from './components/HistoryPanel';
+import WorkflowTemplatesPanel, { WorkflowTemplate } from './components/WorkflowTemplatesPanel';
 import ImagePreviewModal from './components/ImagePreviewModal';
 
 import { useViewTransform } from './hooks/useViewTransform';
 import { useEditor } from './hooks/useEditor';
 import { useWorkflow } from './hooks/useWorkflow';
 
-const INITIAL_NODES: NodeType[] = [
-    {
-        id: 'node-1', type: EnumNodeType.ImageLoader, position: { x: 20, y: 140 }, title: 'Load Image',
-        width: 256, height: 220, minWidth: 256, minHeight: 220,
-        inputs: [], outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], data: {}
-    },
-    {
-        id: 'node-2', type: EnumNodeType.Prompt, position: { x: 20, y: 370 }, title: 'Prompt',
-        width: 256, minWidth: 256, minHeight: 100,
-        inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: {}
-    },
-    {
-        id: 'node-3', type: EnumNodeType.ImageGenerator, position: { x: 310, y: 250 }, title: 'Gemini Image',
-        width: 256, resizable: false,
-        inputs: [
-            { id: 'image-input', type: 'input', dataType: 'image' },
-            { id: 'prompt-input', type: 'input', dataType: 'text' }
-        ],
-        outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }],
-        data: { status: 'idle', mode: 'edit' }
-    },
-    {
-        id: 'node-4', type: EnumNodeType.Preview, position: { x: 600, y: 100 }, title: 'Result Preview',
-        width: 456, height: 420, minWidth: 256, minHeight: 220,
-        inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }],
-        outputs: [], data: {}
-    }
-];
-
-const INITIAL_CONNECTIONS: ConnectionType[] = [
-    { id: 'conn-1', fromNodeId: 'node-1', fromPortId: 'image-output', toNodeId: 'node-3', toPortId: 'image-input' },
-    { id: 'conn-2', fromNodeId: 'node-2', fromPortId: 'prompt-output', toNodeId: 'node-3', toPortId: 'prompt-input' },
-    { id: 'conn-3', fromNodeId: 'node-3', fromPortId: 'result-output', toNodeId: 'node-4', toPortId: 'result-input' },
-];
-
+// Start with a clean background
+const INITIAL_NODES: NodeType[] = [];
+const INITIAL_CONNECTIONS: ConnectionType[] = [];
 
 interface AddNodeMenuState {
     visible: boolean;
@@ -78,7 +47,9 @@ const App: React.FC = () => {
     const [addNodeMenu, setAddNodeMenu] = useState<AddNodeMenuState | null>(null);
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [isHistoryPanelVisible, setIsHistoryPanelVisible] = useState(false);
+    const [isTemplatesPanelVisible, setIsTemplatesPanelVisible] = useState(false);
     const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+    const [isBuilding, setIsBuilding] = useState(false);
 
 
     const {
@@ -87,7 +58,7 @@ const App: React.FC = () => {
     } = useViewTransform(editorRef);
 
     const {
-        nodes, connections, draggingNode, connecting, setConnecting, selectedNodeId, selectedConnectionId,
+        nodes, setNodes, connections, setConnections, draggingNode, connecting, setConnecting, selectedNodeId, selectedConnectionId,
         portPositions, updateNodeData, updateNode, deselectAll, handleNodeMouseDown, handlePortMouseDown,
         handleConnectionClick, handleNodeDrag, stopDraggingNode, createConnection, addNode, setPortRef,
         handleResizeMouseDown, handleNodeResize, stopResizingNode
@@ -203,6 +174,37 @@ const App: React.FC = () => {
         });
     }, []);
 
+    const handleLoadTemplate = useCallback(async (template: WorkflowTemplate) => {
+        setIsBuilding(true);
+        // Step 1: Clear current canvas completely
+        setNodes([]);
+        setConnections([]);
+        resetView();
+
+        // Step 2: Sequential build process for visual effect
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Deep clone template data
+        const clonedNodes = JSON.parse(JSON.stringify(template.nodes));
+        const clonedConnections = JSON.parse(JSON.stringify(template.connections));
+
+        // Add nodes one by one
+        for (const node of clonedNodes) {
+            setNodes(prev => [...prev, node]);
+            await new Promise(resolve => setTimeout(resolve, 150));
+        }
+
+        // Delay to allow port refs to settle in the DOM
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // Final Step: Apply connections
+        setConnections(clonedConnections);
+        
+        // Ensure view is centered
+        resetView();
+        setIsBuilding(false);
+    }, [setNodes, setConnections, resetView]);
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -260,8 +262,23 @@ const App: React.FC = () => {
                     <p className="text-gray-600 text-sm m-1">
                         Copyright © 2026 Mohammad Aboul-Ela
                     </p>
-
                 </div>
+
+                {nodes.length === 0 && !isBuilding && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40 select-none transition-opacity duration-300">
+                      <TemplateIcon className="w-16 h-16 text-slate-600 mb-4" />
+                      <h2 className="text-xl font-bold text-slate-500">Empty Canvas</h2>
+                      <p className="text-slate-600">Select a template below or right-click to add nodes</p>
+                  </div>
+                )}
+
+                {isBuilding && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800/90 backdrop-blur-md border border-cyan-500/50 rounded-full text-cyan-400 text-sm font-bold z-[2000] flex items-center gap-3 shadow-2xl animate-in fade-in slide-in-from-top-4">
+                        <SpinnerIcon className="w-5 h-5 animate-spin" />
+                        Generating Workflow Layout...
+                    </div>
+                )}
+
                 <div
                     className="absolute top-0 left-0"
                     style={{
@@ -301,11 +318,21 @@ const App: React.FC = () => {
                     <Tooltip content="Run Workflow (Ctrl+Enter)" placement="top">
                         <button
                             onClick={runWorkflow}
-                            disabled={isWorkflowRunning}
+                            disabled={isWorkflowRunning || nodes.length === 0 || isBuilding}
                             className="flex items-center justify-center w-12 h-10 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400 rounded-lg transition-colors"
                             aria-label="Run Workflow"
                         >
                             {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Workflow Templates" placement="top">
+                        <button
+                            onClick={() => setIsTemplatesPanelVisible(true)}
+                            className="flex items-center justify-center w-12 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors border-r border-slate-600 pr-2"
+                            aria-label="Workflow Templates"
+                            disabled={isBuilding}
+                        >
+                            <TemplateIcon className="w-5 h-5 text-cyan-400" />
                         </button>
                     </Tooltip>
                     <Tooltip content="Image History" placement="top">
@@ -343,6 +370,12 @@ const App: React.FC = () => {
                     history={history}
                     onClose={() => setIsHistoryPanelVisible(false)}
                     onPreview={setPreviewImageUrl}
+                />
+            )}
+            {isTemplatesPanelVisible && (
+                <WorkflowTemplatesPanel
+                    onClose={() => setIsTemplatesPanelVisible(false)}
+                    onLoadTemplate={handleLoadTemplate}
                 />
             )}
             {previewImageUrl && (

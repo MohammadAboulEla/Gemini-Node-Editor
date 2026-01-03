@@ -250,7 +250,9 @@ export const useEditor = (
 
     return {
         nodes,
+        setNodes,
         connections,
+        setConnections,
         draggingNode,
         connecting,
         setConnecting,
