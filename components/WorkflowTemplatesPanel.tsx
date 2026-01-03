@@ -100,12 +100,6 @@ const TEMPLATES: WorkflowTemplate[] = [
                 outputs: [{ id: 'text-output', type: 'output', dataType: 'text' }],
                 data: { status: 'idle', describeMode: 'detailed' }
             },
-            {
-                id: 'node-3', type: EnumNodeType.Preview, position: { x: 650, y: 150 }, title: 'Analysis Preview',
-                width: 300, height: 400, minWidth: 256, minHeight: 220,
-                inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }],
-                outputs: [], data: {}
-            }
         ],
         connections: [
             { id: 'conn-1', fromNodeId: 'node-1', fromPortId: 'image-output', toNodeId: 'node-2', toPortId: 'image-input' },
