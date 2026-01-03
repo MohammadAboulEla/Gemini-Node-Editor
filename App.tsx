@@ -4,7 +4,7 @@ import Node from './components/Node';
 import Connection from './components/Connection';
 import AddNodeMenu from './components/AddNodeMenu';
 import Tooltip from './components/Tooltip';
-import { PlusIcon, PlayIcon, SpinnerIcon, HistoryIcon, TemplateIcon } from './components/icons';
+import { PlayIcon, SpinnerIcon, HistoryIcon, TemplateIcon } from './components/icons';
 import HistoryPanel from './components/HistoryPanel';
 import WorkflowTemplatesPanel, { WorkflowTemplate } from './components/WorkflowTemplatesPanel';
 import ImagePreviewModal from './components/ImagePreviewModal';
@@ -52,12 +52,12 @@ const App: React.FC = () => {
 
 
     const {
-        viewTransform, isPanning, handleWheel, handlePanMouseDown, handlePanMouseMove,
+        viewTransform, handleWheel, handlePanMouseDown, handlePanMouseMove,
         stopPanning, resetView, getPositionInWorldSpace
     } = useViewTransform(editorRef);
 
     const {
-        nodes, setNodes, connections, setConnections, draggingNode, connecting, setConnecting, selectedNodeIds, selectedConnectionId,
+        nodes, setNodes, connections, setConnections, connecting, setConnecting, selectedNodeIds, selectedConnectionId,
         portPositions, selectionBox, updateNodeData, updateNode, deselectAll, handleNodeMouseDown, handlePortMouseDown,
         handleConnectionClick, handleNodeDrag, stopDraggingNode, createConnection, addNode, setPortRef,
         handleResizeMouseDown, handleNodeResize, stopResizingNode, startSelectionBox, updateSelectionBox, endSelectionBox
@@ -232,7 +232,6 @@ const App: React.FC = () => {
         const portKey = `${nodeId}:${portId}`;
         const portPos = portPositions[portKey];
         if (!portPos || !editorRef.current) return null;
-        const editorRect = editorRef.current.getBoundingClientRect();
         return getPositionInWorldSpace({
             x: portPos.rect.left + portPos.rect.width / 2,
             y: portPos.rect.top + portPos.rect.height / 2,
@@ -267,7 +266,7 @@ const App: React.FC = () => {
                 onContextMenu={handleContextMenu}
             >
                 <div className="absolute inset-0 bg-slate-900 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] background-grid">
-                    <p className="text-gray-600 text-sm m-1 select-none">
+                    <p className="text-gray-600 text-[10px] m-1 select-none">
                         Copyright © 2026 Mohammad Aboul-Ela
                     </p>
                 </div>
@@ -321,36 +320,37 @@ const App: React.FC = () => {
                 </div>
 
                 <div
-                    className="absolute bottom-2 left-2 pointer-events-auto z-[9999] bg-slate-800/50 backdrop-blur-sm p-2 rounded-lg border border-slate-700 flex items-center gap-2"
+                    className="absolute bottom-2 left-2 pointer-events-auto z-[9999] bg-slate-800/50 backdrop-blur-sm p-1 rounded-lg border border-slate-700 flex items-center gap-1"
                     onPointerDown={(e) => { e.stopPropagation(); }}
                 >
                     <Tooltip content="Run Workflow (Ctrl+Enter)" placement="top">
                         <button
                             onClick={runWorkflow}
                             disabled={isWorkflowRunning || nodes.length === 0 || isBuilding}
-                            className="flex items-center justify-center w-12 h-10 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400 rounded-lg transition-colors"
+                            className="flex items-center justify-center w-10 h-8 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600 disabled:text-slate-400 rounded-lg transition-colors"
                             aria-label="Run Workflow"
                         >
                             {isWorkflowRunning ? <SpinnerIcon className="w-5 h-5 animate-spin" /> : <PlayIcon className="w-5 h-5" />}
                         </button>
                     </Tooltip>
-                    <Tooltip content="Workflow Templates" placement="top">
+
+                    <Tooltip content="Image History" placement="top">
+                        <button
+                            onClick={() => setIsHistoryPanelVisible(true)}
+                            className="flex items-center justify-center w-10 h-8 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+                            aria-label="Show Image History"
+                        >
+                            <HistoryIcon className="w-5 h-5" />
+                        </button>
+                    </Tooltip>
+                                        <Tooltip content="Workflow Templates" placement="top">
                         <button
                             onClick={() => setIsTemplatesPanelVisible(true)}
-                            className="flex items-center justify-center w-12 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+                            className="flex items-center justify-center w-10 h-8 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
                             aria-label="Workflow Templates"
                             disabled={isBuilding}
                         >
                             <TemplateIcon className="w-5 h-5 text-cyan-400" />
-                        </button>
-                    </Tooltip>
-                    <Tooltip content="Image History" placement="top">
-                        <button
-                            onClick={() => setIsHistoryPanelVisible(true)}
-                            className="flex items-center justify-center w-12 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
-                            aria-label="Show Image History"
-                        >
-                            <HistoryIcon className="w-5 h-5" />
                         </button>
                     </Tooltip>
                     <Tooltip content="Rest View" placement="top">

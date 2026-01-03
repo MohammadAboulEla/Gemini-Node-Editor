@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { NodeType as EnumNodeType, Node as NodeType, Connection as ConnectionType } from '../types';
+import { TemplateIcon } from './icons';
 
 export interface WorkflowTemplate {
     id: string;
@@ -9,22 +10,22 @@ export interface WorkflowTemplate {
     connections: ConnectionType[];
 }
 
-const TemplateIcon: React.FC<{className?: string}> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-  </svg>
-);
-
 const TEMPLATES: WorkflowTemplate[] = [
     {
         id: 'simple-generate',
         title: 'Simple Image Generation',
-        description: 'Generate an image from scratch using a text prompt.',
+        description: 'Generate an image from scratch using a text prompt and optional styles.',
         nodes: [
             {
-                id: 'gen-prompt', type: EnumNodeType.Prompt, position: { x: 50, y: 150 }, title: 'Prompt',
-                width: 256, minWidth: 256, minHeight: 100,
-                inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'A futuristic city at sunset, synthwave style.' }
+                id: 'gen-styler', type: EnumNodeType.PromptStyler, position: { x: 50, y: 150 }, title: 'Prompt Styler',
+                width: 256, minWidth: 256, height: 280, minHeight: 280,
+                inputs: [], 
+                outputs: [{ id: 'styler-output', type: 'output', dataType: 'text' }], 
+                data: { 
+                    userPrompt: 'A futuristic city at sunset, synthwave style.', 
+                    selectedFile: 'Art', 
+                    selectedStyleName: 'none' 
+                }
             },
             {
                 id: 'gen-node', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 150 }, title: 'Gemini Generator',
@@ -41,7 +42,7 @@ const TEMPLATES: WorkflowTemplate[] = [
             }
         ],
         connections: [
-            { id: 'gc1', fromNodeId: 'gen-prompt', fromPortId: 'prompt-output', toNodeId: 'gen-node', toPortId: 'prompt-input' },
+            { id: 'gc1', fromNodeId: 'gen-styler', fromPortId: 'styler-output', toNodeId: 'gen-node', toPortId: 'prompt-input' },
             { id: 'gc2', fromNodeId: 'gen-node', fromPortId: 'result-output', toNodeId: 'gen-prev', toPortId: 'result-input' }
         ]
     },
