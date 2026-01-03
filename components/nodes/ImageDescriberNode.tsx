@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NodeContentProps } from './types';
 
@@ -7,7 +6,10 @@ export const ImageDescriberNode: React.FC<NodeContentProps> = ({ node, updateNod
 
     return (
         <div className="p-2 h-full flex flex-col gap-2">
-            <div className="w-full flex-grow min-h-0 p-2 bg-slate-900 border border-slate-600 rounded-md text-sm text-slate-300 overflow-y-auto">
+            <div 
+                className="w-full flex-grow min-h-0 p-2 bg-slate-900 border border-slate-600 rounded-md text-sm text-slate-300 overflow-y-auto"
+                onWheel={(e) => e.stopPropagation()}
+            >
                 {status === 'loading' && <p className="text-cyan-400">Describing image...</p>}
                 {status === 'error' && <p className="text-red-400 break-words">{error}</p>}
                 {status === 'success' && <p className="whitespace-pre-wrap break-words">{text}</p>}

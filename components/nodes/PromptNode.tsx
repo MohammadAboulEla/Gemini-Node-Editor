@@ -9,6 +9,7 @@ export const PromptNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
                 placeholder="Enter your prompt here..."
                 value={node.data.text || ''}
                 onChange={(e) => updateNodeData(node.id, { text: e.target.value })}
+                onWheel={(e) => e.stopPropagation()}
             />
         </div>
     );

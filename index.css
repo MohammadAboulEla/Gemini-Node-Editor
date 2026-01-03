@@ -1,0 +1,46 @@
+/* Custom Scrollbar Styling */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155; /* slate-700 */
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0891b2; /* cyan-600 */
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+/* Ensure textareas don't show the default resize handle if it clashes with node resize */
+textarea {
+  scrollbar-gutter: stable;
+}
+
+/* Specific overrides for a cleaner look in tight spaces like nodes */
+.bg-slate-800 ::-webkit-scrollbar-thumb {
+  background-color: #475569; /* slate-600 for slightly more visibility inside nodes */
+  background-clip: content-box;
+  border: 3px solid transparent;
+}
+
+.bg-slate-800 ::-webkit-scrollbar-thumb:hover {
+  background-color: #06b6d4; /* cyan-500 */
+}
