@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect, MouseEvent, useRef } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, DraggingNodeState, ConnectingState, PortPositions, ResizingNodeState, SelectionBox, Point } from '../types';
 import createNode from '../nodeFactory';
@@ -200,17 +201,19 @@ export const useEditor = (
     }, []);
     
     const createConnection = useCallback((fromNodeId: string, fromPortId: string, toNodeId: string, toPortId: string) => {
-         if (!connections.some(c => c.toNodeId === toNodeId && c.toPortId === toPortId)) {
-            const newConnection: ConnectionType = {
-                id: `conn-${Date.now()}`,
-                fromNodeId,
-                fromPortId,
-                toNodeId,
-                toPortId,
-            };
-            setConnections(prev => [...prev, newConnection]);
-        }
-    }, [connections]);
+        const newConnection: ConnectionType = {
+            id: `conn-${Date.now()}`,
+            fromNodeId,
+            fromPortId,
+            toNodeId,
+            toPortId,
+        };
+        setConnections(prev => {
+            // Remove any existing connection to the target input port
+            const filtered = prev.filter(c => !(c.toNodeId === toNodeId && c.toPortId === toPortId));
+            return [...filtered, newConnection];
+        });
+    }, []);
     
     const addNode = useCallback((nodeType: EnumNodeType, position: {x: number, y: number}, connectionContext?: { fromNodeId: string, fromPortId: string }) => {
         const newNode = createNode(nodeType, position);

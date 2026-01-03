@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType } from '../types';
 import { editImage, generateImage, describeImage, DescribeMode, mixImages, generateWithStyle } from '../services/geminiService';
+import { getStylesForFile } from '../services/styleService';
 
 const normalizeImageInput = (input: any): { base64Image: string; mimeType: string } | null => {
     if (!input) return null;
@@ -79,6 +80,43 @@ export const useWorkflow = (
                     case EnumNodeType.ImageLoader:
                     case EnumNodeType.Prompt:
                         output = { [node.outputs[0].id]: node.data };
+                        break;
+                    
+                    case EnumNodeType.PromptStyler:
+                        const { userPrompt, selectedFile, selectedStyleName } = node.data;
+                        const availableStyles = getStylesForFile(selectedFile);
+                        
+                        let stylizedText = userPrompt;
+                        
+                        if (selectedStyleName === 'random') {
+                            // Filter out 'none' and 'random' to pick a meaningful style
+                            const filteredStyles = availableStyles.filter(s => 
+                                s.name.toLowerCase() !== 'none' && 
+                                s.name.toLowerCase() !== 'random'
+                            );
+                            if (filteredStyles.length > 0) {
+                                const randomIndex = Math.floor(Math.random() * filteredStyles.length);
+                                const style = filteredStyles[randomIndex];
+                                if (style.prompt && style.prompt.includes('{prompt}')) {
+                                    stylizedText = style.prompt.replace('{prompt}', userPrompt);
+                                } else if (style.prompt) {
+                                    stylizedText = `${userPrompt}, ${style.prompt}`;
+                                }
+                            }
+                        } else if (selectedStyleName !== 'none') {
+                            const selectedStyle = availableStyles.find(s => s.name === selectedStyleName);
+                            if (selectedStyle && selectedStyle.prompt) {
+                                if (selectedStyle.prompt.includes('{prompt}')) {
+                                    stylizedText = selectedStyle.prompt.replace('{prompt}', userPrompt);
+                                } else {
+                                    stylizedText = `${userPrompt}, ${selectedStyle.prompt}`;
+                                }
+                            }
+                        }
+                        
+                        const stylerResult = { text: stylizedText };
+                        updateNodeData(node.id, stylerResult);
+                        output = { 'styler-output': stylerResult };
                         break;
     
                     case EnumNodeType.SolidColor:
@@ -359,7 +397,7 @@ export const useWorkflow = (
                         break;
 
                     case EnumNodeType.Preview:
-                        const previewInput = inputs['result-input'];
+                        const previewInput = inputs['result-input'] || inputs['styler-output'];
                         if (previewInput) {
                             const newPreviewData: { imageUrl: string | null; text: string | null } = {
                                 imageUrl: null,

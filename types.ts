@@ -1,6 +1,7 @@
 export enum NodeType {
   ImageLoader = 'IMAGE_LOADER',
   Prompt = 'PROMPT',
+  PromptStyler = 'PROMPT_STYLER',
   ImageGenerator = 'IMAGE_GENERATOR',
   Preview = 'PREVIEW',
   ImageStitcher = 'IMAGE_STITCHER',

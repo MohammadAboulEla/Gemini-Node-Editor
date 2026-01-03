@@ -1,14 +1,14 @@
-
-import { GoogleGenAI, Modality, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
 if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable is not set");
 }
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-const ai_model = 'gemini-2.5-flash';
-// const ai_image_model =  'gemini-3-pro-image-preview';
-const ai_image_model =  'gemini-2.5-flash-image';
+// Use gemini-3-flash-preview for general text and vision-to-text tasks
+const ai_model = 'gemini-3-flash-preview';
+// gemini-2.5-flash-image is the recommended model for general image generation and editing
+const ai_image_model = 'gemini-2.5-flash-image';
 
 export const editImage = async (base64Image: string, mimeType: string, prompt: string): Promise<{imageUrl: string, text: string}> => {
     try {
@@ -23,13 +23,11 @@ export const editImage = async (base64Image: string, mimeType: string, prompt: s
             text: prompt,
         };
 
+        // Removed responseModalities as it's not documented for image generation models and can cause errors
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: ai_image_model,
             contents: {
                 parts: [imagePart, textPart],
-            },
-            config: {
-                responseModalities: [Modality.IMAGE, Modality.TEXT],
             },
         });
 
@@ -91,9 +89,6 @@ export const mixImages = async (sourceImage: {base64Image: string, mimeType: str
                     textPart,
                 ],
             },
-            config: {
-                responseModalities: [Modality.IMAGE, Modality.TEXT],
-            },
         });
         
         if (!response.candidates || response.candidates.length === 0 || !response.candidates[0].content || !response.candidates[0].content.parts) {
@@ -150,9 +145,6 @@ export const generateWithStyle = async (refImage: {base64Image: string, mimeType
                     textPart,
                 ],
             },
-            config: {
-                responseModalities: [Modality.IMAGE, Modality.TEXT],
-            },
         });
         
         if (!response.candidates || response.candidates.length === 0 || !response.candidates[0].content || !response.candidates[0].content.parts) {
@@ -199,9 +191,6 @@ export const generateImage = async (prompt: string): Promise<{imageUrl: string, 
             model: ai_image_model,
             contents: {
                 parts: [instructionPart,textPart],
-            },
-            config: {
-                responseModalities: [Modality.IMAGE, Modality.TEXT],
             },
         });
 
@@ -268,7 +257,8 @@ export const describeImage = async (base64Image: string, mimeType: string, mode:
             },
         });
 
-        return response.text;
+        // The property .text returns string | undefined
+        return response.text || '';
 
     } catch (error) {
         console.error("Error describing image with Gemini API:", error);
