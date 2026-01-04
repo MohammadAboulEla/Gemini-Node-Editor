@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Node as NodeType, NodeType as EnumNodeType } from '../types';
+import { Node as NodeType, Node as NodeInstance, NodeType as EnumNodeType } from '../types';
 import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
 import Tooltip from './Tooltip';
@@ -16,14 +17,15 @@ import { CropImageNode } from './nodes/CropImageNode';
 import { PaddingNode } from './nodes/PaddingNode';
 
 interface NodeProps {
-    node: NodeType;
+    node: NodeInstance;
     isSelected: boolean;
     onMouseDown: (e: React.MouseEvent<HTMLDivElement>, nodeId: string) => void;
     onResizeMouseDown: (e: React.MouseEvent<HTMLDivElement>, nodeId: string) => void;
     onPortMouseDown: (e: React.MouseEvent<HTMLDivElement>, nodeId: string, portId: string) => void;
+    onContextMenu: (e: React.MouseEvent<HTMLDivElement>, nodeId: string) => void;
     setPortRef: (nodeId: string, portId: string, el: HTMLDivElement | null) => void;
     updateNodeData: (nodeId: string, data: Record<string, any>) => void;
-    updateNode: (nodeId: string, updates: Partial<NodeType>) => void;
+    updateNode: (nodeId: string, updates: Partial<NodeInstance>) => void;
 }
 
 const NodeContent: React.FC<NodeContentProps> = (props) => {
@@ -66,7 +68,7 @@ const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
     [EnumNodeType.Padding]: PaddingIcon,
 }
 
-const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, setPortRef, updateNodeData, updateNode }) => {
+const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, onContextMenu, setPortRef, updateNodeData, updateNode }) => {
     const Icon = ICONS[node.type] || StarIcon;
     
     const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -80,13 +82,14 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
                 width: node.width ? `${node.width}px` : undefined,
                 height: node.height ? `${node.height}px` : undefined,
             }}
+            onContextMenu={(e) => onContextMenu(e, node.id)}
         >
             <div
                 className="bg-slate-900 p-2 rounded-t-md cursor-grab active:cursor-grabbing flex items-center gap-2 flex-shrink-0"
                 onMouseDown={(e) => onMouseDown(e, node.id)}
             >
                 <Icon className="w-4 h-4 text-cyan-400"/>
-                <h3 className="font-bold text-sm select-none">{node.title}</h3>
+                <h3 className="font-bold text-sm select-none truncate pr-2" title={node.title}>{node.title}</h3>
             </div>
             
             <div className="flex-grow min-h-0">

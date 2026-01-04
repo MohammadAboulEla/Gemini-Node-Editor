@@ -1,5 +1,4 @@
 
-
 import { useState, useCallback, useEffect, MouseEvent, useRef } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, DraggingNodeState, ConnectingState, PortPositions, ResizingNodeState, SelectionBox, Point } from '../types';
 import createNode from '../nodeFactory';
@@ -26,7 +25,6 @@ export const useEditor = (
 
     const updatePortPositions = useCallback(() => {
         const newPositions: PortPositions = {};
-        // Explicitly cast Object.entries to prevent 'el' from being inferred as 'unknown'
         (Object.entries(portRefs.current) as [string, HTMLDivElement][]).forEach(([key, el]) => {
             if (el) {
                 const [nodeId, portId] = key.split(':');
@@ -57,12 +55,26 @@ export const useEditor = (
     }, []);
 
     const updateNode = useCallback((nodeId: string, updates: Partial<NodeType>) => {
-        setNodes(prevNodes => prevNodes.map(n => 
-            n.id === nodeId 
-            ? { ...n, ...updates, data: { ...n.data, ...updates.data } } 
-            : n
-        ));
+        setNodes(prevNodes => prevNodes.map(n => {
+            if (n.id !== nodeId) return n;
+            const { data, ...rest } = updates;
+            return {
+                ...n,
+                ...rest,
+                data: data ? { ...n.data, ...data } : n.data
+            };
+        }));
     }, []);
+
+    const deleteNodes = useCallback((ids: string[]) => {
+        setNodes(prev => prev.filter(n => !ids.includes(n.id)));
+        setSelectedNodeIds(prev => prev.filter(id => !ids.includes(id)));
+    }, []);
+
+    const deleteConnection = useCallback((id: string) => {
+        setConnections(prev => prev.filter(c => c.id !== id));
+        if (selectedConnectionId === id) setSelectedConnectionId(null);
+    }, [selectedConnectionId]);
     
     const deselectAll = useCallback(() => {
         setSelectedNodeIds([]);
@@ -211,7 +223,6 @@ export const useEditor = (
             toPortId,
         };
         setConnections(prev => {
-            // Remove any existing connection to the target input port
             const filtered = prev.filter(c => !(c.toNodeId === toNodeId && c.toPortId === toPortId));
             return [...filtered, newConnection];
         });
@@ -292,18 +303,16 @@ export const useEditor = (
             if (e.key === 'Delete' || e.key === 'Backspace') {
                 if (selectedNodeIds.length > 0) {
                     e.preventDefault();
-                    setNodes(prev => prev.filter(n => !selectedNodeIds.includes(n.id)));
-                    setSelectedNodeIds([]);
+                    deleteNodes(selectedNodeIds);
                 } else if (selectedConnectionId) {
                     e.preventDefault();
-                    setConnections(prev => prev.filter(c => c.id !== selectedConnectionId));
-                    setSelectedConnectionId(null);
+                    deleteConnection(selectedConnectionId);
                 }
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedNodeIds, selectedConnectionId]);
+    }, [selectedNodeIds, selectedConnectionId, deleteNodes, deleteConnection]);
 
     return {
         nodes,
@@ -319,6 +328,8 @@ export const useEditor = (
         selectionBox,
         updateNodeData,
         updateNode,
+        deleteNodes,
+        deleteConnection,
         deselectAll,
         handleNodeMouseDown,
         handlePortMouseDown,

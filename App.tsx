@@ -4,6 +4,7 @@ import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeTyp
 import Node from './components/Node';
 import Connection from './components/Connection';
 import AddNodeMenu from './components/AddNodeMenu';
+import NodeContextMenu from './components/NodeContextMenu';
 import Tooltip from './components/Tooltip';
 import { PlayIcon, SpinnerIcon, HistoryIcon, TemplateIcon } from './components/icons';
 import HistoryPanel from './components/HistoryPanel';
@@ -26,6 +27,12 @@ interface AddNodeMenuState {
     };
 }
 
+interface NodeContextMenuState {
+    visible: boolean;
+    position: Point;
+    nodeId: string;
+}
+
 interface HistoryItem {
     id: string;
     imageUrl: string;
@@ -45,6 +52,7 @@ const App: React.FC = () => {
     const svgRef = useRef<SVGSVGElement>(null);
     const tempConnectionPathRef = useRef<SVGPathElement | null>(null);
     const [addNodeMenu, setAddNodeMenu] = useState<AddNodeMenuState | null>(null);
+    const [nodeContextMenu, setNodeContextMenu] = useState<NodeContextMenuState | null>(null);
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [isHistoryPanelVisible, setIsHistoryPanelVisible] = useState(false);
     const [isTemplatesPanelVisible, setIsTemplatesPanelVisible] = useState(false);
@@ -59,7 +67,7 @@ const App: React.FC = () => {
 
     const {
         nodes, setNodes, connections, setConnections, connecting, setConnecting, selectedNodeIds, selectedConnectionId,
-        portPositions, selectionBox, updateNodeData, updateNode, deselectAll, handleNodeMouseDown, handlePortMouseDown,
+        portPositions, selectionBox, updateNodeData, updateNode, deleteNodes, deselectAll, handleNodeMouseDown, handlePortMouseDown,
         handleConnectionClick, handleNodeDrag, stopDraggingNode, createConnection, addNode, setPortRef,
         handleResizeMouseDown, handleNodeResize, stopResizingNode, startSelectionBox, updateSelectionBox, endSelectionBox
     } = useEditor(INITIAL_NODES, INITIAL_CONNECTIONS, viewTransform, getPositionInWorldSpace);
@@ -111,7 +119,6 @@ const App: React.FC = () => {
         }
 
         if (connecting) {
-            // Added explicit type assertion for portPositions values to resolve 'unknown' property access errors
             const toPort = (Object.values(portPositions) as { nodeId: string; portId: string; rect: DOMRect }[]).find(p => {
                 const { left, right, top, bottom } = p.rect;
                 return e.clientX >= left && e.clientX <= right && e.clientY >= top && e.clientY <= bottom;
@@ -166,6 +173,39 @@ const App: React.FC = () => {
         }
     };
 
+    const handleNodeContextMenu = useCallback((e: MouseEvent<HTMLDivElement>, nodeId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setNodeContextMenu({
+            visible: true,
+            position: { x: e.clientX, y: e.clientY },
+            nodeId
+        });
+    }, []);
+
+    const handleDeleteNode = useCallback(() => {
+        if (!nodeContextMenu) return;
+        deleteNodes([nodeContextMenu.nodeId]);
+        setNodeContextMenu(null);
+    }, [nodeContextMenu, deleteNodes]);
+
+    const handleDuplicateNode = useCallback(() => {
+        if (!nodeContextMenu) return;
+        const sourceNode = nodes.find(n => n.id === nodeContextMenu.nodeId);
+        if (sourceNode) {
+            const newNode: NodeType = {
+                ...JSON.parse(JSON.stringify(sourceNode)),
+                id: `node-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                position: {
+                    x: sourceNode.position.x + 30,
+                    y: sourceNode.position.y + 30,
+                },
+            };
+            setNodes(prev => [...prev, newNode]);
+        }
+        setNodeContextMenu(null);
+    }, [nodeContextMenu, nodes, setNodes]);
+
     const handleAddNode = useCallback((nodeType: EnumNodeType) => {
         if (!addNodeMenu?.position) return;
         const worldPos = getPositionInWorldSpace(addNodeMenu.position);
@@ -179,7 +219,7 @@ const App: React.FC = () => {
         setAddNodeMenu({
             visible: true,
             position: {
-                x: editorRect.left + editorRect.width / 2 - 128, // Center menu
+                x: editorRect.left + editorRect.width / 2 - 128,
                 y: editorRect.top + editorRect.height / 2 - 100,
             }
         });
@@ -315,7 +355,7 @@ const App: React.FC = () => {
                     {nodes.map(node => (
                         <Node key={node.id} node={node} isSelected={selectedNodeIds.includes(node.id)}
                             onMouseDown={handleNodeMouseDown} onPortMouseDown={handlePortMouseDown}
-                            onResizeMouseDown={handleResizeMouseDown}
+                            onResizeMouseDown={handleResizeMouseDown} onContextMenu={handleNodeContextMenu}
                             setPortRef={setPortRef} updateNodeData={updateNodeData} updateNode={updateNode}
                         />
                     ))}
@@ -373,6 +413,15 @@ const App: React.FC = () => {
                         onSelect={handleAddNode}
                         onClose={() => setAddNodeMenu(null)}
                         sourceDataType={nodes.find(n => n.id === addNodeMenu.connectionContext?.fromNodeId)?.outputs.find(p => p.id === addNodeMenu.connectionContext?.fromPortId)?.dataType}
+                    />
+                )}
+
+                {nodeContextMenu?.visible && (
+                    <NodeContextMenu
+                        position={nodeContextMenu.position}
+                        onClose={() => setNodeContextMenu(null)}
+                        onDelete={handleDeleteNode}
+                        onDuplicate={handleDuplicateNode}
                     />
                 )}
             </div>
