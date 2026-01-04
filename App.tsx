@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, MouseEvent, useEffect } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, Point } from './types';
 import Node from './components/Node';
@@ -110,7 +111,8 @@ const App: React.FC = () => {
         }
 
         if (connecting) {
-            const toPort = Object.values(portPositions).find(p => {
+            // Added explicit type assertion for portPositions values to resolve 'unknown' property access errors
+            const toPort = (Object.values(portPositions) as { nodeId: string; portId: string; rect: DOMRect }[]).find(p => {
                 const { left, right, top, bottom } = p.rect;
                 return e.clientX >= left && e.clientX <= right && e.clientY >= top && e.clientY <= bottom;
             });

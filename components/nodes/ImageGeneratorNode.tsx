@@ -47,7 +47,7 @@ export const ImageGeneratorNode: React.FC<NodeContentProps> = ({ node, updateNod
                 <label htmlFor={`gemini-mode-${node.id}`} className="text-xs font-semibold text-slate-400 block mb-1">Mode</label>
                 <select
                     id={`gemini-mode-${node.id}`}
-                    value={node.data.mode || 'edit'}
+                    value={node.data.mode || 'generate'}
                     onChange={handleModeChange}
                     className="w-full p-1.5 bg-slate-700 border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
                 >

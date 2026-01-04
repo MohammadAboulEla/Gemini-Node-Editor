@@ -44,11 +44,10 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 ...baseNode,
                 title: 'Gemini Image',
                 inputs: [
-                    { id: 'image-input', type: 'input', dataType: 'image', label: 'Image' },
                     { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' },
                 ],
                 outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }],
-                data: { status: 'idle', cache: {}, mode: 'edit' },
+                data: { status: 'idle', cache: {}, mode: 'generate' },
                 resizable: false,
             };
         case EnumNodeType.ImageStitcher:
@@ -80,8 +79,8 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 inputs: [],
                 outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
                 data: { color: '#06b6d4', aspectRatio: '1:1' },
-                height: 180,
-                minHeight: 180,
+                height: 160,
+                minHeight: 160,
             };
         case EnumNodeType.CropImage:
             return {

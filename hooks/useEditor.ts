@@ -1,4 +1,5 @@
 
+
 import { useState, useCallback, useEffect, MouseEvent, useRef } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, DraggingNodeState, ConnectingState, PortPositions, ResizingNodeState, SelectionBox, Point } from '../types';
 import createNode from '../nodeFactory';
@@ -25,7 +26,8 @@ export const useEditor = (
 
     const updatePortPositions = useCallback(() => {
         const newPositions: PortPositions = {};
-        Object.entries(portRefs.current).forEach(([key, el]) => {
+        // Explicitly cast Object.entries to prevent 'el' from being inferred as 'unknown'
+        (Object.entries(portRefs.current) as [string, HTMLDivElement][]).forEach(([key, el]) => {
             if (el) {
                 const [nodeId, portId] = key.split(':');
                 newPositions[key] = { nodeId, portId, rect: el.getBoundingClientRect() };

@@ -1,9 +1,11 @@
-import { useState, useCallback, useRef, WheelEvent } from 'react';
+
+import React, { useState, useCallback, useRef, WheelEvent } from 'react';
 import { Point } from '../types';
 
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 2.0;
 
+// Correct usage of React.RefObject and React.WheelEvent
 export const useViewTransform = (editorRef: React.RefObject<HTMLDivElement>) => {
     const [viewTransform, setViewTransform] = useState({ x: 0, y: 0, scale: 1 });
     const [isPanning, setIsPanning] = useState(false);
