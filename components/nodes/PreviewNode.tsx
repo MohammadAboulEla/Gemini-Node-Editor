@@ -29,27 +29,25 @@ export const PreviewNode: React.FC<NodeContentProps> = ({ node }) => {
                     )}
                 </div>
             )}
-            {hasText && (
+            {hasText && !hasImage && (
                 <div 
-                    className={`${!hasImage ? 'flex-grow' : 'flex-shrink-0 max-h-[33%]'} min-h-0 w-full relative group`}
+                    className="flex-grow min-h-0 w-full relative group"
                     onWheel={(e) => e.stopPropagation()}
                 >
-                    <p className={`${!hasImage ? 'text-base pr-10' : 'text-xs pr-2'} h-full text-slate-300 p-2 bg-slate-900 rounded overflow-y-auto whitespace-pre-wrap break-words border border-slate-700`}>
+                    <p className="text-base pr-10 h-full text-slate-300 p-2 bg-slate-900 rounded overflow-y-auto whitespace-pre-wrap break-words border border-slate-700">
                         {text}
                     </p>
-                    {!hasImage && (
-                        <button
-                            onClick={handleCopy}
-                            className={`absolute top-2 right-2 p-1.5 rounded-md shadow-lg transition-all active:scale-95 z-10 flex items-center justify-center ${copied ? 'bg-green-600 text-white' : 'bg-slate-800/80 hover:bg-cyan-600 text-slate-300 hover:text-white'}`}
-                            title="Copy to clipboard"
-                        >
-                            {copied ? (
-                                <CheckIcon className="w-3.5 h-3.5" />
-                            ) : (
-                                <ClipboardIcon className="w-3.5 h-3.5" />
-                            )}
-                        </button>
-                    )}
+                    <button
+                        onClick={handleCopy}
+                        className={`absolute top-2 right-2 p-1.5 rounded-md shadow-lg transition-all active:scale-95 z-10 flex items-center justify-center ${copied ? 'bg-green-600 text-white' : 'bg-slate-800/80 hover:bg-cyan-600 text-slate-300 hover:text-white'}`}
+                        title="Copy to clipboard"
+                    >
+                        {copied ? (
+                            <CheckIcon className="w-3.5 h-3.5" />
+                        ) : (
+                            <ClipboardIcon className="w-3.5 h-3.5" />
+                        )}
+                    </button>
                 </div>
             )}
         </div>

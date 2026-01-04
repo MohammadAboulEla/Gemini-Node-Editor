@@ -69,6 +69,7 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 inputs: [{ id: 'image-input', type: 'input', dataType: 'image' }],
                 outputs: [{ id: 'text-output', type: 'output', dataType: 'text' }],
                 data: { status: 'idle', cache: {}, describeMode: 'normal' },
+                height: 180,
                 minHeight: 180,
             };
         case EnumNodeType.SolidColor:
