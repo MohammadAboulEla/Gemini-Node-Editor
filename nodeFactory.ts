@@ -27,7 +27,6 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 title: 'Prompt',
                 inputs: [],
                 outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }],
-                minHeight: 160,
             };
         case EnumNodeType.PromptStyler:
             return {
@@ -36,8 +35,8 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 inputs: [],
                 outputs: [{ id: 'styler-output', type: 'output', dataType: 'text' }],
                 data: { userPrompt: '', selectedFile: 'Basic', selectedStyleName: 'none' },
-                height: 310,
-                minHeight: 310,
+                height: 250,
+                minHeight: 250,
             };
         case EnumNodeType.ImageGenerator:
             return {
