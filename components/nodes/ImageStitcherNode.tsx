@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NodeContentProps } from './types';
 
@@ -12,7 +13,12 @@ export const ImageStitcherNode: React.FC<NodeContentProps> = ({ node, updateNode
                 {status === 'loading' && 'Stitching...'}
                 {status === 'error' && <span className="text-red-400 text-xs p-1">{error}</span>}
                 {status === 'success' && stitchedImageUrl && (
-                     <img src={stitchedImageUrl} alt="Stitched result" className="max-w-full max-h-full object-contain" />
+                     <img 
+                        src={stitchedImageUrl} 
+                        alt="Stitched result" 
+                        className="max-w-full max-h-full object-contain" 
+                        onContextMenu={(e) => e.stopPropagation()}
+                     />
                 )}
                 {(!status || status === 'idle') && 'Ready to run'}
             </div>

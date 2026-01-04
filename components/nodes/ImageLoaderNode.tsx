@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ImageIcon } from '../icons';
 import { NodeContentProps } from './types';
@@ -24,7 +25,12 @@ export const ImageLoaderNode: React.FC<NodeContentProps> = ({ node, updateNodeDa
             <label className="cursor-pointer group relative block w-full h-full bg-slate-900 rounded-lg flex items-center justify-center overflow-hidden">
                 {imageUrl ? (
                     <>
-                        <img src={imageUrl} alt={node.data.fileName || 'Uploaded image'} className="max-w-full max-h-full object-contain" />
+                        <img 
+                            src={imageUrl} 
+                            alt={node.data.fileName || 'Uploaded image'} 
+                            className="max-w-full max-h-full object-contain" 
+                            onContextMenu={(e) => e.stopPropagation()}
+                        />
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="text-white font-semibold">Change Image</span>
                         </div>

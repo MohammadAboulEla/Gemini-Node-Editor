@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { NodeContentProps } from './types';
 import { ClipboardIcon, CheckIcon } from '../icons';
@@ -21,7 +22,12 @@ export const PreviewNode: React.FC<NodeContentProps> = ({ node }) => {
             {(hasImage || !hasText) && (
                 <div className="flex-grow min-h-0 w-full bg-slate-900 rounded-md flex items-center justify-center overflow-hidden">
                     {hasImage ? (
-                        <img src={imageUrl} alt="Generated result" className="max-w-full max-h-full object-contain" />
+                        <img 
+                            src={imageUrl} 
+                            alt="Generated result" 
+                            className="max-w-full max-h-full object-contain" 
+                            onContextMenu={(e) => e.stopPropagation()}
+                        />
                     ) : (
                         <span className="text-slate-500 text-sm">
                             Awaiting result...

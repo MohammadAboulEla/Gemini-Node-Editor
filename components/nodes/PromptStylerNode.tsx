@@ -1,3 +1,4 @@
+
 import React, { useMemo, useEffect, useState } from 'react';
 import { NodeContentProps } from './types';
 import { getStyleFiles, getStylesForFile, fetchStyles } from '../../services/styleService';
@@ -91,6 +92,7 @@ export const PromptStylerNode: React.FC<NodeContentProps> = ({ node, updateNodeD
                 value={userPrompt}
                 onChange={(e) => updateNodeData(node.id, { userPrompt: e.target.value })}
                 onWheel={(e) => e.stopPropagation()}
+                onContextMenu={(e) => e.stopPropagation()}
             />
             
             <div className="flex flex-col gap-2 bg-slate-900/50 p-1.5 rounded-md border border-slate-700/50">

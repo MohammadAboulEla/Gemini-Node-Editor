@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NodeContentProps } from './types';
 
@@ -10,6 +11,7 @@ export const PromptNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
                 value={node.data.text || ''}
                 onChange={(e) => updateNodeData(node.id, { text: e.target.value })}
                 onWheel={(e) => e.stopPropagation()}
+                onContextMenu={(e) => e.stopPropagation()}
             />
         </div>
     );
