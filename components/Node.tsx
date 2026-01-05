@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Node as NodeType, Node as NodeInstance, NodeType as EnumNodeType } from '../types';
+import { Node as NodeInstance, NodeType as EnumNodeType } from '../types';
 import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
 import Tooltip from './Tooltip';
@@ -73,6 +72,20 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
     
     const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+    const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        // Check if the user clicked on an element that should use the default browser menu
+        const isInteractive = ['TEXTAREA', 'IMG', 'INPUT', 'SELECT'].includes(target.tagName) || target.closest('.select-text');
+        
+        if (isInteractive) {
+            // Allow the event to bubble and show the browser's default context menu
+            return;
+        }
+
+        // Otherwise, show our custom context menu
+        onContextMenu(e, node.id);
+    };
+
     return (
         <div
             className={`absolute bg-slate-800 border-2 rounded-lg shadow-xl flex flex-col transition-colors select-none ${isSelected ? 'border-cyan-500' : 'border-slate-700'}`}
@@ -82,7 +95,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
                 width: node.width ? `${node.width}px` : undefined,
                 height: node.height ? `${node.height}px` : undefined,
             }}
-            onContextMenu={(e) => onContextMenu(e, node.id)}
+            onContextMenu={handleContextMenu}
         >
             <div
                 className="bg-slate-900 p-2 rounded-t-md cursor-grab active:cursor-grabbing flex items-center gap-2 flex-shrink-0"

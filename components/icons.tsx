@@ -58,7 +58,10 @@ export const ScissorsIcon: React.FC<{className?: string}> = ({ className }) => (
 
 export const PaddingIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-5.25v9" />
+        {/* Outer Boundary (Dashed) */}
+        <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="2 2" />
+        {/* Inner Content (Solid) */}
+        <rect x="7" y="7" width="10" height="10" rx="1" />
     </svg>
 );
 
