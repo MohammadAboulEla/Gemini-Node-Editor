@@ -20,6 +20,7 @@ interface ViewportProps {
   setPortRef: (nodeId: string, portId: string, el: HTMLDivElement | null) => void;
   updateNodeData: (nodeId: string, data: Record<string, any>) => void;
   updateNode: (nodeId: string, updates: Partial<NodeType>) => void;
+  deselectAll: () => void;
 }
 
 const Viewport: React.FC<ViewportProps> = ({
@@ -39,6 +40,7 @@ const Viewport: React.FC<ViewportProps> = ({
   setPortRef,
   updateNodeData,
   updateNode,
+  deselectAll,
 }) => {
   const renderSelectionBox = () => {
     if (!selectionBox) return null;
@@ -95,6 +97,7 @@ const Viewport: React.FC<ViewportProps> = ({
             setPortRef={setPortRef}
             updateNodeData={updateNodeData}
             updateNode={updateNode}
+            deselectAll={deselectAll}
           />
         ))}
       </div>

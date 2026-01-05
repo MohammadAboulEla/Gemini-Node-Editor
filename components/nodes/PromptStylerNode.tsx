@@ -1,10 +1,9 @@
-
 import React, { useMemo, useEffect, useState } from 'react';
 import { NodeContentProps } from './types';
 import { getStyleFiles, getStylesForFile, fetchStyles } from '../../services/styleService';
 import { MagicWandIcon } from '../icons';
 
-export const PromptStylerNode: React.FC<NodeContentProps> = ({ node, updateNodeData }) => {
+export const PromptStylerNode: React.FC<NodeContentProps> = ({ node, updateNodeData, deselectAll }) => {
     const { 
         userPrompt = '', 
         selectedFile = 'Art', 
@@ -37,7 +36,6 @@ export const PromptStylerNode: React.FC<NodeContentProps> = ({ node, updateNodeD
 
     const handleFileChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newFile = e.target.value;
-        // Optimization: Reset style name to 'none' or first available when file changes
         updateNodeData(node.id, { 
             selectedFile: newFile, 
             selectedStyleName: 'none' 
@@ -51,7 +49,6 @@ export const PromptStylerNode: React.FC<NodeContentProps> = ({ node, updateNodeD
         const availableStyles = getStylesForFile(selectedFile);
         let styleToApply = selectedStyleName;
 
-        // If random, pick one now to bake it in
         if (selectedStyleName === 'random') {
             const filteredStyles = availableStyles.filter(s => 
                 s.name.toLowerCase() !== 'none' && 
@@ -91,6 +88,7 @@ export const PromptStylerNode: React.FC<NodeContentProps> = ({ node, updateNodeD
                 placeholder="Base prompt..."
                 value={userPrompt}
                 onChange={(e) => updateNodeData(node.id, { userPrompt: e.target.value })}
+                onFocus={() => deselectAll?.()}
                 onWheel={(e) => e.stopPropagation()}
                 onContextMenu={(e) => e.stopPropagation()}
             />

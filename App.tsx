@@ -5,6 +5,7 @@ import NodeContextMenu from './components/NodeContextMenu';
 import { SpinnerIcon, TemplateIcon } from './components/icons';
 import HistoryPanel from './components/HistoryPanel';
 import WorkflowTemplatesPanel, { WorkflowTemplate } from './components/WorkflowTemplatesPanel';
+import SettingsPanel from './components/SettingsPanel';
 import ImagePreviewModal from './components/ImagePreviewModal';
 import BackgroundGrid from './components/BackgroundGrid';
 import Toolbar from './components/Toolbar';
@@ -55,6 +56,7 @@ const App: React.FC = () => {
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [isHistoryPanelVisible, setIsHistoryPanelVisible] = useState(false);
     const [isTemplatesPanelVisible, setIsTemplatesPanelVisible] = useState(false);
+    const [isSettingsPanelVisible, setIsSettingsPanelVisible] = useState(false);
     const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
     const [isBuilding, setIsBuilding] = useState(false);
 
@@ -167,7 +169,7 @@ const App: React.FC = () => {
                 onDoubleClick={(e) => { if (e.target === e.currentTarget) setAddNodeMenu({ visible: true, position: { x: e.clientX, y: e.clientY } }); }}
                 onContextMenu={(e) => { if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('background-grid')) { e.preventDefault(); setAddNodeMenu({ visible: true, position: { x: e.clientX, y: e.clientY } }); } }}>
                 
-                <BackgroundGrid />
+                <BackgroundGrid onOpenSettings={() => setIsSettingsPanelVisible(true)} />
 
                 {nodes.length === 0 && !isBuilding && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40 select-none transition-opacity duration-300">
@@ -183,7 +185,7 @@ const App: React.FC = () => {
                     </div>
                 )}
 
-                <Viewport nodes={nodes} connections={connections} selectedNodeIds={selectedNodeIds} selectedConnectionId={selectedConnectionId} viewTransform={viewTransform} selectionBox={selectionBox} svgRef={svgRef} getPortCenter={getPortCenter} handleNodeMouseDown={handleNodeMouseDown} handlePortMouseDown={handlePortMouseDown} handleResizeMouseDown={handleResizeMouseDown} handleNodeContextMenu={(e, id) => { e.preventDefault(); setNodeContextMenu({ visible: true, position: { x: e.clientX, y: e.clientY }, nodeId: id }); }} handleConnectionClick={handleConnectionClick} setPortRef={setPortRef} updateNodeData={updateNodeData} updateNode={updateNode} />
+                <Viewport nodes={nodes} connections={connections} selectedNodeIds={selectedNodeIds} selectedConnectionId={selectedConnectionId} viewTransform={viewTransform} selectionBox={selectionBox} svgRef={svgRef} getPortCenter={getPortCenter} handleNodeMouseDown={handleNodeMouseDown} handlePortMouseDown={handlePortMouseDown} handleResizeMouseDown={handleResizeMouseDown} handleNodeContextMenu={(e, id) => { e.preventDefault(); setNodeContextMenu({ visible: true, position: { x: e.clientX, y: e.clientY }, nodeId: id }); }} handleConnectionClick={handleConnectionClick} setPortRef={setPortRef} updateNodeData={updateNodeData} updateNode={updateNode} deselectAll={deselectAll} />
 
                 <Toolbar isWorkflowRunning={isWorkflowRunning} nodesCount={nodes.length} isBuilding={isBuilding} scale={viewTransform.scale} onRun={runWorkflow} onShowHistory={() => setIsHistoryPanelVisible(true)} onShowTemplates={() => setIsTemplatesPanelVisible(true)} onResetView={resetView} />
 
@@ -192,6 +194,7 @@ const App: React.FC = () => {
             </div>
             {isHistoryPanelVisible && <HistoryPanel history={history} onClose={() => setIsHistoryPanelVisible(false)} onPreview={setPreviewImageUrl} />}
             {isTemplatesPanelVisible && <WorkflowTemplatesPanel onClose={() => setIsTemplatesPanelVisible(false)} onLoadTemplate={handleLoadTemplate} />}
+            {isSettingsPanelVisible && <SettingsPanel onClose={() => setIsSettingsPanelVisible(false)} />}
             {previewImageUrl && <ImagePreviewModal imageUrl={previewImageUrl} onClose={() => setPreviewImageUrl(null)} />}
         </div>
     );

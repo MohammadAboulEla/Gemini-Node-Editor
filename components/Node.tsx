@@ -1,6 +1,6 @@
 import React from 'react';
 import { Node as NodeInstance, NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
 import Tooltip from './Tooltip';
 
@@ -14,6 +14,7 @@ import { ImageDescriberNode } from './nodes/ImageDescriberNode';
 import { SolidColorNode } from './nodes/SolidColorNode';
 import { CropImageNode } from './nodes/CropImageNode';
 import { PaddingNode } from './nodes/PaddingNode';
+import { PoseNode } from './nodes/PoseNode';
 
 interface NodeProps {
     node: NodeInstance;
@@ -25,6 +26,7 @@ interface NodeProps {
     setPortRef: (nodeId: string, portId: string, el: HTMLDivElement | null) => void;
     updateNodeData: (nodeId: string, data: Record<string, any>) => void;
     updateNode: (nodeId: string, updates: Partial<NodeInstance>) => void;
+    deselectAll: () => void;
 }
 
 const NodeContent: React.FC<NodeContentProps> = (props) => {
@@ -49,6 +51,8 @@ const NodeContent: React.FC<NodeContentProps> = (props) => {
             return <CropImageNode {...props} />;
         case EnumNodeType.Padding:
             return <PaddingNode {...props} />;
+        case EnumNodeType.Pose:
+            return <PoseNode {...props} />;
         default:
             return null;
     }
@@ -65,24 +69,22 @@ const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
     [EnumNodeType.SolidColor]: SwatchIcon,
     [EnumNodeType.CropImage]: ScissorsIcon,
     [EnumNodeType.Padding]: PaddingIcon,
+    [EnumNodeType.Pose]: UserIcon,
 }
 
-const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, onContextMenu, setPortRef, updateNodeData, updateNode }) => {
+const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, onContextMenu, setPortRef, updateNodeData, updateNode, deselectAll }) => {
     const Icon = ICONS[node.type] || StarIcon;
     
     const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
     const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        // Check if the user clicked on an element that should use the default browser menu
         const isInteractive = ['TEXTAREA', 'IMG', 'INPUT', 'SELECT'].includes(target.tagName) || target.closest('.select-text');
         
         if (isInteractive) {
-            // Allow the event to bubble and show the browser's default context menu
             return;
         }
 
-        // Otherwise, show our custom context menu
         onContextMenu(e, node.id);
     };
 
@@ -106,7 +108,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
             </div>
             
             <div className="flex-grow min-h-0">
-                <NodeContent node={node} updateNodeData={updateNodeData} updateNode={updateNode} />
+                <NodeContent node={node} updateNodeData={updateNodeData} updateNode={updateNode} deselectAll={deselectAll} />
             </div>
 
             {/* Input Ports */}
@@ -121,7 +123,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
                         <Tooltip content={portLabel} placement="right">
                             <div
                                 ref={(el) => setPortRef(node.id, port.id, el)}
-                                onMouseDown={(e) => { e.stopPropagation(); }} // Prevent node drag
+                                onMouseDown={(e) => { e.stopPropagation(); }}
                                 className="w-3 h-5 rounded-full bg-slate-600 border-2 border-slate-400 hover:bg-cyan-500 cursor-crosshair"
                                 aria-label={portLabel}
                             ></div>

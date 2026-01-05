@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect, MouseEvent, useRef } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, DraggingNodeState, ConnectingState, PortPositions, ResizingNodeState, SelectionBox, Point } from '../types';
 import createNode from '../nodeFactory';
@@ -301,6 +300,14 @@ export const useEditor = (
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Delete' || e.key === 'Backspace') {
+                // Ignore delete events if focused on a text input, textarea, or contenteditable element
+                const active = document.activeElement;
+                const isInputActive = active instanceof HTMLInputElement || 
+                                     active instanceof HTMLTextAreaElement || 
+                                     (active as HTMLElement)?.isContentEditable;
+                
+                if (isInputActive) return;
+
                 if (selectedNodeIds.length > 0) {
                     e.preventDefault();
                     deleteNodes(selectedNodeIds);

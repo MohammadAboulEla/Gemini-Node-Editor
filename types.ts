@@ -9,6 +9,7 @@ export enum NodeType {
   SolidColor = 'SOLID_COLOR',
   CropImage = 'CROP_IMAGE',
   Padding = 'PADDING',
+  Pose = 'POSE',
 }
 
 export interface Point {

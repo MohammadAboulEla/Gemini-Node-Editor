@@ -65,6 +65,12 @@ export const PaddingIcon: React.FC<{className?: string}> = ({ className }) => (
     </svg>
 );
 
+export const UserIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+);
+
 export const TemplateIcon: React.FC<{className?: string}> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
@@ -123,4 +129,21 @@ export const CheckIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
     </svg>
+);
+
+export const CogIcon: React.FC<{className?: string}> = ({ className }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className}
+  >
+    <path d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.11-.454.03L6.21 5.193a1.875 1.875 0 00-2.542.459l-1.29 2.233a1.875 1.875 0 00.469 2.537l1.05.694c.11.073.158.208.145.347a7.405 7.405 0 000 1.074c.013.139-.035.274-.145.347l-1.05.694a1.875 1.875 0 00-.469 2.537l1.29 2.233a1.875 1.875 0 002.542.459l1.103-.647c.12-.08.288-.085.454.03.295.202.625.392.986.57.182.088.277.228.297.348l.178 1.072c.151.904.933 1.567 1.85 1.567h2.584c.917 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.115-.26.297-.348.36-.178.691-.368.986-.57.166-.115.334-.11.454-.03l1.103.647a1.875 1.875 0 002.542-.459l1.29-2.233a1.875 1.875 0 00-.469-2.537l-1.05-.694c-.11-.073-.158-.208-.145-.347.039-.354.039-.72 0-1.074-.139-.013-.274.035-.347.145l1.05-.694a1.875 1.875 0 00.469-2.537l-1.29-2.233a1.875 1.875 0 00-2.542-.459l-1.103.647c-.12.08-.288.085-.454-.03a7.493 7.493 0 00-.986-.57c-.182-.088-.277-.228-.297-.348l-.178-1.072c-.151-.904-.933-1.567-1.85-1.567h-2.584zM12 15.75a3.75 3.75 0 110-7.5 3.75 3.75 0 010 7.5z" />
+  </svg>
+);
+
+export const InfoCircleIcon: React.FC<{className?: string}> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
 );

@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { NodeContentProps } from './types';
 
-export const PromptNode: React.FC<NodeContentProps> = ({ node, updateNodeData }) => {
+export const PromptNode: React.FC<NodeContentProps> = ({ node, updateNodeData, deselectAll }) => {
     return (
         <div className="p-2 h-full">
             <textarea
@@ -10,6 +9,7 @@ export const PromptNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
                 placeholder="Enter your prompt here..."
                 value={node.data.text || ''}
                 onChange={(e) => updateNodeData(node.id, { text: e.target.value })}
+                onFocus={() => deselectAll?.()}
                 onWheel={(e) => e.stopPropagation()}
                 onContextMenu={(e) => e.stopPropagation()}
             />

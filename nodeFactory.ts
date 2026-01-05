@@ -102,6 +102,36 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 height: 260,
                 minHeight: 260,
             };
+        case EnumNodeType.Pose:
+            return {
+                ...baseNode,
+                title: 'Pose Guide',
+                inputs: [],
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
+                width: 320,
+                height: 420,
+                minWidth: 200,
+                minHeight: 250,
+                data: {
+                    joints: {
+                        head: { x: 50, y: 15 },
+                        neck: { x: 50, y: 25 },
+                        leftShoulder: { x: 40, y: 30 },
+                        rightShoulder: { x: 60, y: 30 },
+                        leftElbow: { x: 35, y: 45 },
+                        rightElbow: { x: 65, y: 45 },
+                        leftWrist: { x: 30, y: 60 },
+                        rightWrist: { x: 70, y: 60 },
+                        torso: { x: 50, y: 55 },
+                        leftHip: { x: 45, y: 60 },
+                        rightHip: { x: 55, y: 60 },
+                        leftKnee: { x: 45, y: 75 },
+                        rightKnee: { x: 55, y: 75 },
+                        leftAnkle: { x: 45, y: 90 },
+                        rightAnkle: { x: 55, y: 90 }
+                    }
+                }
+            };
         case EnumNodeType.Preview:
             return {
                 ...baseNode,
