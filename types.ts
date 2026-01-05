@@ -10,6 +10,7 @@ export enum NodeType {
   CropImage = 'CROP_IMAGE',
   Padding = 'PADDING',
   Pose = 'POSE',
+  Sketch = 'SKETCH',
 }
 
 export interface Point {

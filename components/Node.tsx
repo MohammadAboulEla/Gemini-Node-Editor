@@ -1,6 +1,6 @@
 import React from 'react';
 import { Node as NodeInstance, NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
 import Tooltip from './Tooltip';
 
@@ -15,6 +15,7 @@ import { SolidColorNode } from './nodes/SolidColorNode';
 import { CropImageNode } from './nodes/CropImageNode';
 import { PaddingNode } from './nodes/PaddingNode';
 import { PoseNode } from './nodes/PoseNode';
+import { SketchNode } from './nodes/SketchNode';
 
 interface NodeProps {
     node: NodeInstance;
@@ -53,6 +54,8 @@ const NodeContent: React.FC<NodeContentProps> = (props) => {
             return <PaddingNode {...props} />;
         case EnumNodeType.Pose:
             return <PoseNode {...props} />;
+        case EnumNodeType.Sketch:
+            return <SketchNode {...props} />;
         default:
             return null;
     }
@@ -70,6 +73,7 @@ const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
     [EnumNodeType.CropImage]: ScissorsIcon,
     [EnumNodeType.Padding]: PaddingIcon,
     [EnumNodeType.Pose]: UserIcon,
+    [EnumNodeType.Sketch]: PencilIcon,
 }
 
 const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, onContextMenu, setPortRef, updateNodeData, updateNode, deselectAll }) => {
@@ -79,7 +83,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
 
     const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        const isInteractive = ['TEXTAREA', 'IMG', 'INPUT', 'SELECT'].includes(target.tagName) || target.closest('.select-text');
+        const isInteractive = ['TEXTAREA', 'IMG', 'INPUT', 'SELECT', 'CANVAS'].includes(target.tagName) || target.closest('.select-text');
         
         if (isInteractive) {
             return;

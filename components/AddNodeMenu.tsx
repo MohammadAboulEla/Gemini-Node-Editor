@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon } from './icons';
 import createNode from '../nodeFactory';
 
 interface AddNodeMenuProps {
@@ -12,6 +12,7 @@ interface AddNodeMenuProps {
 
 const NODE_OPTIONS = [
     { type: EnumNodeType.ImageLoader, title: 'Load Image', icon: ImageIcon },
+    { type: EnumNodeType.Sketch, title: 'Hand Sketch', icon: PencilIcon },
     { type: EnumNodeType.Prompt, title: 'Prompt', icon: TextIcon },
     { type: EnumNodeType.PromptStyler, title: 'Prompt Styler', icon: StarIcon },
     { type: EnumNodeType.Pose, title: 'Pose Guide', icon: UserIcon },

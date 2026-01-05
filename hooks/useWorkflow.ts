@@ -95,6 +95,7 @@ export const useWorkflow = (
                 switch (node.type) {
                     case EnumNodeType.ImageLoader:
                     case EnumNodeType.Prompt:
+                    case EnumNodeType.Sketch:
                         output = { [node.outputs[0].id]: node.data };
                         break;
                     

@@ -132,6 +132,18 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                     }
                 }
             };
+        case EnumNodeType.Sketch:
+            return {
+                ...baseNode,
+                title: 'Hand Sketch',
+                inputs: [],
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
+                width: 320,
+                height: 400,
+                minWidth: 200,
+                minHeight: 250,
+                data: { base64Image: null, color: '#ffffff', brushSize: 5 }
+            };
         case EnumNodeType.Preview:
             return {
                 ...baseNode,
