@@ -8,24 +8,25 @@ interface AddNodeMenuProps {
     onSelect: (nodeType: EnumNodeType) => void;
     onClose: () => void;
     sourceDataType?: 'image' | 'text' | 'any';
+    sourceDirection?: 'input' | 'output';
 }
 
 const NODE_OPTIONS = [
     { type: EnumNodeType.ImageLoader, title: 'Load Image', icon: ImageIcon },
-    { type: EnumNodeType.Sketch, title: 'Hand Sketch', icon: PencilIcon },
+    { type: EnumNodeType.ImageGenerator, title: 'Gemini Image', icon: MagicWandIcon },
     { type: EnumNodeType.Prompt, title: 'Prompt', icon: TextIcon },
     { type: EnumNodeType.PromptStyler, title: 'Prompt Styler', icon: StarIcon },
+    { type: EnumNodeType.Preview, title: 'Result Preview', icon: EyeIcon },
+    { type: EnumNodeType.ImageDescriber, title: 'Describe Image', icon: DescribeIcon },
+    { type: EnumNodeType.Sketch, title: 'Hand Sketch', icon: PencilIcon },
+    { type: EnumNodeType.ImageStitcher, title: 'Stitch Images', icon: StitchIcon },
     { type: EnumNodeType.Pose, title: 'Pose Guide', icon: UserIcon },
     { type: EnumNodeType.SolidColor, title: 'Solid Color', icon: SwatchIcon },
     { type: EnumNodeType.CropImage, title: 'Crop Image', icon: ScissorsIcon },
     { type: EnumNodeType.Padding, title: 'Add Padding', icon: PaddingIcon },
-    { type: EnumNodeType.ImageGenerator, title: 'Gemini Image', icon: MagicWandIcon },
-    { type: EnumNodeType.ImageStitcher, title: 'Stitch Images', icon: StitchIcon },
-    { type: EnumNodeType.ImageDescriber, title: 'Describe Image', icon: DescribeIcon },
-    { type: EnumNodeType.Preview, title: 'Result Preview', icon: EyeIcon },
 ];
 
-const AddNodeMenu: React.FC<AddNodeMenuProps> = ({ position, onSelect, onClose, sourceDataType }) => {
+const AddNodeMenu: React.FC<AddNodeMenuProps> = ({ position, onSelect, onClose, sourceDataType, sourceDirection = 'output' }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const menuRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -62,23 +63,29 @@ const AddNodeMenu: React.FC<AddNodeMenuProps> = ({ position, onSelect, onClose, 
         ? baseFilteredNodes
         : baseFilteredNodes.filter(option => {
             const tempNode = createNode(option.type, { x: 0, y: 0 });
-            if (tempNode.inputs.length === 0) {
-                return false; // Cannot connect to a node with no inputs
+            
+            if (sourceDirection === 'output') {
+                // We dragged from an output, so we need a node with a compatible input
+                if (tempNode.inputs.length === 0) return false;
+                if (sourceDataType === 'any') return true;
+                return tempNode.inputs.some(inputPort =>
+                    inputPort.dataType === sourceDataType || inputPort.dataType === 'any'
+                );
+            } else {
+                // We dragged from an input, so we need a node with a compatible output
+                if (tempNode.outputs.length === 0) return false;
+                if (sourceDataType === 'any') return true;
+                return tempNode.outputs.some(outputPort =>
+                    outputPort.dataType === sourceDataType || outputPort.dataType === 'any'
+                );
             }
-            if (sourceDataType === 'any') {
-                return true; // Source is generic, allow connecting to any node with an input
-            }
-            // Check if the temp node has a compatible input port
-            return tempNode.inputs.some(inputPort =>
-                inputPort.dataType === sourceDataType || inputPort.dataType === 'any'
-            );
         });
 
 
     return (
         <div
             ref={menuRef}
-            className="absolute bg-slate-800 border border-slate-700 rounded-lg shadow-2xl w-64 z-50 flex flex-col"
+            className="absolute bg-slate-800 border border-slate-700 rounded-lg shadow-2xl w-64 z-[10002] flex flex-col"
             style={{ top: position.y, left: position.x }}
             onWheel={(e) => e.stopPropagation()}
         >

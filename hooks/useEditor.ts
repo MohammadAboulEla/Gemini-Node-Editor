@@ -27,11 +27,20 @@ export const useEditor = (
         (Object.entries(portRefs.current) as [string, HTMLDivElement][]).forEach(([key, el]) => {
             if (el) {
                 const [nodeId, portId] = key.split(':');
-                newPositions[key] = { nodeId, portId, rect: el.getBoundingClientRect() };
+                const node = nodes.find(n => n.id === nodeId);
+                const port = node?.inputs.find(p => p.id === portId) || node?.outputs.find(p => p.id === portId);
+                if (port) {
+                    newPositions[key] = { 
+                        nodeId, 
+                        portId, 
+                        rect: el.getBoundingClientRect(),
+                        portType: port.type
+                    };
+                }
             }
         });
         setPortPositions(newPositions);
-    }, []);
+    }, [nodes]);
     
     useEffect(() => {
         updatePortPositions();
@@ -185,6 +194,7 @@ export const useEditor = (
             fromNodeId: nodeId,
             fromPortId: portId,
             fromPortRect: portPos.rect,
+            portType: portPos.portType
         });
     }, [portPositions]);
 
@@ -227,21 +237,32 @@ export const useEditor = (
         });
     }, []);
     
-    const addNode = useCallback((nodeType: EnumNodeType, position: {x: number, y: number}, connectionContext?: { fromNodeId: string, fromPortId: string }) => {
+    const addNode = useCallback((nodeType: EnumNodeType, position: {x: number, y: number}, connectionContext?: { fromNodeId: string, fromPortId: string, portType: 'input' | 'output' }) => {
         const newNode = createNode(nodeType, position);
         setNodes(prev => [...prev, newNode]);
 
         if (connectionContext) {
-            const { fromNodeId, fromPortId } = connectionContext;
+            const { fromNodeId, fromPortId, portType } = connectionContext;
             const sourceNode = nodes.find(n => n.id === fromNodeId);
-            const sourcePort = sourceNode?.outputs.find(p => p.id === fromPortId);
+            const sourcePort = portType === 'output' 
+                ? sourceNode?.outputs.find(p => p.id === fromPortId)
+                : sourceNode?.inputs.find(p => p.id === fromPortId);
 
             if (sourcePort) {
-                const compatibleInputPort = newNode.inputs.find(p =>
-                    p.dataType === sourcePort.dataType || p.dataType === 'any'
-                );
-                if (compatibleInputPort) {
-                    createConnection(fromNodeId, fromPortId, newNode.id, compatibleInputPort.id);
+                if (portType === 'output') {
+                    const compatibleInputPort = newNode.inputs.find(p =>
+                        p.dataType === sourcePort.dataType || p.dataType === 'any'
+                    );
+                    if (compatibleInputPort) {
+                        createConnection(fromNodeId, fromPortId, newNode.id, compatibleInputPort.id);
+                    }
+                } else {
+                    const compatibleOutputPort = newNode.outputs.find(p =>
+                        p.dataType === sourcePort.dataType || p.dataType === 'any'
+                    );
+                    if (compatibleOutputPort) {
+                        createConnection(newNode.id, compatibleOutputPort.id, fromNodeId, fromPortId);
+                    }
                 }
             }
         }

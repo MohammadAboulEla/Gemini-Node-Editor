@@ -24,6 +24,7 @@ interface AddNodeMenuState {
     connectionContext?: {
         fromNodeId: string;
         fromPortId: string;
+        portType: 'input' | 'output';
     };
 }
 
@@ -99,7 +100,12 @@ const App: React.FC = () => {
                 y: (fromViewportY - viewTransform.y) / viewTransform.scale,
             };
             const toPoint = getPositionInWorldSpace({ x: e.clientX, y: e.clientY });
-            tempConnectionPathRef.current.setAttribute('d', createPathData(fromPoint, toPoint));
+            
+            // To keep the bezier curves logically flowing left-to-right (Output to Input)
+            const pathStart = connecting.portType === 'output' ? fromPoint : toPoint;
+            const pathEnd = connecting.portType === 'output' ? toPoint : fromPoint;
+
+            tempConnectionPathRef.current.setAttribute('d', createPathData(pathStart, pathEnd));
         }
     }, [handlePanMouseMove, handleNodeDrag, handleNodeResize, connecting, viewTransform, getPositionInWorldSpace, selectionBox, updateSelectionBox]);
 
@@ -108,14 +114,27 @@ const App: React.FC = () => {
         if (tempConnectionPathRef.current) { tempConnectionPathRef.current.remove(); tempConnectionPathRef.current = null; }
 
         if (connecting) {
-            const toPort = (Object.values(portPositions) as { nodeId: string; portId: string; rect: DOMRect }[]).find(p => {
+            const toPort = (Object.values(portPositions) as { nodeId: string; portId: string; rect: DOMRect; portType: 'input' | 'output' }[]).find(p => {
                 const { left, right, top, bottom } = p.rect;
                 return e.clientX >= left && e.clientX <= right && e.clientY >= top && e.clientY <= bottom;
             });
-            if (toPort && toPort.nodeId !== connecting.fromNodeId) {
-                createConnection(connecting.fromNodeId, connecting.fromPortId, toPort.nodeId, toPort.portId);
+
+            if (toPort && toPort.nodeId !== connecting.fromNodeId && toPort.portType !== connecting.portType) {
+                if (connecting.portType === 'output') {
+                    createConnection(connecting.fromNodeId, connecting.fromPortId, toPort.nodeId, toPort.portId);
+                } else {
+                    createConnection(toPort.nodeId, toPort.portId, connecting.fromNodeId, connecting.fromPortId);
+                }
             } else if (!toPort) {
-                setAddNodeMenu({ visible: true, position: { x: e.clientX, y: e.clientY }, connectionContext: { fromNodeId: connecting.fromNodeId, fromPortId: connecting.fromPortId } });
+                setAddNodeMenu({ 
+                    visible: true, 
+                    position: { x: e.clientX, y: e.clientY }, 
+                    connectionContext: { 
+                        fromNodeId: connecting.fromNodeId, 
+                        fromPortId: connecting.fromPortId,
+                        portType: connecting.portType
+                    } 
+                });
             }
         }
         stopDraggingNode(); stopResizingNode(); setConnecting(null); stopPanning();
@@ -162,6 +181,17 @@ const App: React.FC = () => {
         }
     }, [connecting]);
 
+    // Calculate source data type for the search menu filter
+    const getSourceDataType = () => {
+        if (!addNodeMenu?.connectionContext) return undefined;
+        const { fromNodeId, fromPortId, portType } = addNodeMenu.connectionContext;
+        const node = nodes.find(n => n.id === fromNodeId);
+        const port = portType === 'output' 
+            ? node?.outputs.find(p => p.id === fromPortId)
+            : node?.inputs.find(p => p.id === fromPortId);
+        return port?.dataType;
+    };
+
     return (
         <div className="w-screen h-screen flex bg-slate-900 text-white">
             <div ref={editorRef} className="flex-grow h-full overflow-hidden relative cursor-default" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onWheel={handleWheel}
@@ -175,7 +205,7 @@ const App: React.FC = () => {
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40 select-none transition-opacity duration-300">
                       <TemplateIcon className="w-16 h-16 text-slate-600 mb-4" />
                       <h2 className="text-xl font-bold text-slate-500">Empty Canvas</h2>
-                      <p className="text-slate-600">Select a template below or Ctrl+Drag to select</p>
+                      <p className="text-slate-600">Select a template below or right click and build</p>
                   </div>
                 )}
 
@@ -189,7 +219,15 @@ const App: React.FC = () => {
 
                 <Toolbar isWorkflowRunning={isWorkflowRunning} nodesCount={nodes.length} isBuilding={isBuilding} scale={viewTransform.scale} onRun={runWorkflow} onShowHistory={() => setIsHistoryPanelVisible(true)} onShowTemplates={() => setIsTemplatesPanelVisible(true)} onResetView={resetView} />
 
-                {addNodeMenu?.visible && <AddNodeMenu position={addNodeMenu.position} onSelect={handleAddNode} onClose={() => setAddNodeMenu(null)} sourceDataType={nodes.find(n => n.id === addNodeMenu.connectionContext?.fromNodeId)?.outputs.find(p => p.id === addNodeMenu.connectionContext?.fromPortId)?.dataType} />}
+                {addNodeMenu?.visible && (
+                    <AddNodeMenu 
+                        position={addNodeMenu.position} 
+                        onSelect={handleAddNode} 
+                        onClose={() => setAddNodeMenu(null)} 
+                        sourceDataType={getSourceDataType()}
+                        sourceDirection={addNodeMenu.connectionContext?.portType}
+                    />
+                )}
                 {nodeContextMenu?.visible && <NodeContextMenu position={nodeContextMenu.position} onClose={() => setNodeContextMenu(null)} onDelete={() => { deleteNodes([nodeContextMenu.nodeId]); setNodeContextMenu(null); }} onDuplicate={() => { const s = nodes.find(n => n.id === nodeContextMenu.nodeId); if (s) setNodes(prev => [...prev, { ...JSON.parse(JSON.stringify(s)), id: `node-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, position: { x: s.position.x + 30, y: s.position.y + 30 } }]); setNodeContextMenu(null); }} />}
             </div>
             {isHistoryPanelVisible && <HistoryPanel history={history} onClose={() => setIsHistoryPanelVisible(false)} onPreview={setPreviewImageUrl} />}

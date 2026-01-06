@@ -65,6 +65,7 @@ export interface ConnectingState {
   fromNodeId: string;
   fromPortId: string;
   fromPortRect: DOMRect;
+  portType: 'input' | 'output';
 }
 
 export interface SelectionBox {
@@ -76,4 +77,5 @@ export type PortPositions = Record<string, {
     nodeId: string;
     portId: string;
     rect: DOMRect;
+    portType: 'input' | 'output';
 }>;

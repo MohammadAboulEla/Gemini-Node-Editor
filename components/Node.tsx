@@ -127,7 +127,7 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
                         <Tooltip content={portLabel} placement="right">
                             <div
                                 ref={(el) => setPortRef(node.id, port.id, el)}
-                                onMouseDown={(e) => { e.stopPropagation(); }}
+                                onMouseDown={(e) => { e.stopPropagation(); onPortMouseDown(e, node.id, port.id); }}
                                 className="w-3 h-5 rounded-full bg-slate-600 border-2 border-slate-400 hover:bg-cyan-500 cursor-crosshair"
                                 aria-label={portLabel}
                             ></div>
