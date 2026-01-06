@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { NodeContentProps } from './types';
-import { PencilIcon, TrashIcon } from '../icons';
+import { PencilIcon, TrashIcon, EraserIcon } from '../icons';
 
 export const SketchNode: React.FC<NodeContentProps> = ({ node, updateNodeData }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -9,6 +9,7 @@ export const SketchNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
     const [color, setColor] = useState(node.data.color || '#ffffff');
     const [brushSize, setBrushSize] = useState(node.data.brushSize || 5);
     const [isEraser, setIsEraser] = useState(false);
+    const [cursorPos, setCursorPos] = useState<{ x: number, y: number } | null>(null);
 
     // Initialize or restore canvas
     useEffect(() => {
@@ -94,14 +95,16 @@ export const SketchNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
     };
 
     const draw = (e: React.PointerEvent) => {
+        const coords = getCoordinates(e);
+        setCursorPos(coords);
+
         if (!isDrawing) return;
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        const { x, y } = getCoordinates(e);
-        ctx.lineTo(x, y);
+        ctx.lineTo(coords.x, coords.y);
         ctx.stroke();
     };
 
@@ -109,6 +112,14 @@ export const SketchNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
         if (!isDrawing) return;
         setIsDrawing(false);
         saveToData();
+    };
+
+    const handlePointerLeave = () => {
+        setCursorPos(null);
+        if (isDrawing) {
+            setIsDrawing(false);
+            saveToData();
+        }
     };
 
     const clearCanvas = () => {
@@ -129,7 +140,7 @@ export const SketchNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
                     type="color"
                     value={color}
                     onChange={(e) => setColor(e.target.value)}
-                    className="w-6 h-6 bg-transparent border-none cursor-pointer rounded overflow-hidden flex-shrink-0"
+                    className="w-6 h-6 bg-transparent border-none cursor-pointer rounded-full overflow-hidden flex-shrink-0"
                     title="Brush Color"
                 />
                 
@@ -158,9 +169,7 @@ export const SketchNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
                         className={`p-1 rounded transition-colors ${isEraser ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:bg-slate-700'}`}
                         title="Eraser"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <EraserIcon className="w-4 h-4" />
                     </button>
                 </div>
 
@@ -177,13 +186,31 @@ export const SketchNode: React.FC<NodeContentProps> = ({ node, updateNodeData })
             <div ref={containerRef} className="flex-grow bg-slate-900 rounded-lg border-2 border-slate-700 relative overflow-hidden group">
                 <canvas
                     ref={canvasRef}
-                    className="absolute inset-0 touch-none cursor-crosshair active:cursor-none"
+                    className="absolute inset-0 touch-none cursor-none active:cursor-none"
                     onPointerDown={startDrawing}
                     onPointerMove={draw}
                     onPointerUp={stopDrawing}
-                    onPointerLeave={stopDrawing}
+                    onPointerLeave={handlePointerLeave}
+                    onPointerEnter={(e) => setCursorPos(getCoordinates(e))}
                 />
-                {!node.data.base64Image && !isDrawing && (
+                
+                {/* Brush Preview Circle */}
+                {cursorPos && (
+                    <div 
+                        className="absolute pointer-events-none rounded-full border border-white/50 mix-blend-difference"
+                        style={{
+                            left: cursorPos.x,
+                            top: cursorPos.y,
+                            width: brushSize,
+                            height: brushSize,
+                            transform: 'translate(-50%, -50%)',
+                            backgroundColor: isEraser ? 'rgba(15, 23, 42, 0.5)' : color,
+                            boxShadow: '0 0 0 1px rgba(0,0,0,0.5)'
+                        }}
+                    />
+                )}
+
+                {!node.data.base64Image && !isDrawing && !cursorPos && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-600">
                         <PencilIcon className="w-8 h-8 mb-2 opacity-20" />
                         <span className="text-xs font-semibold opacity-30">Start Sketching...</span>

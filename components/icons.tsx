@@ -77,6 +77,12 @@ export const PencilIcon: React.FC<{className?: string}> = ({ className }) => (
   </svg>
 );
 
+export const EraserIcon: React.FC<{className?: string}> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9.75 14.25 12m0 0 2.25 2.25M14.25 12l2.25-2.25M14.25 12 12 14.25m-2.58 4.92-6.37-6.37a2.121 2.121 0 0 1 0-3L10.58 2.2a2.121 2.121 0 0 1 3 0l8.18 8.18a2.121 2.121 0 0 1 0 3L13.16 21.98a2.121 2.121 0 0 1-3 0l-1.58-1.58C8.25 20.25 7.5 20.25 6.75 20.25h-3v-3h3c.75 0 1.5 0 1.5.75Z" />
+  </svg>
+);
+
 export const TrashIcon: React.FC<{className?: string}> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
