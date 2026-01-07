@@ -41,7 +41,7 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
         case EnumNodeType.ImageGenerator:
             return {
                 ...baseNode,
-                title: 'Gemini Image',
+                title: 'Gemini Engine',
                 inputs: [
                     { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' },
                 ],

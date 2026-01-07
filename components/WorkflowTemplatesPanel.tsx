@@ -28,7 +28,7 @@ const TEMPLATES: WorkflowTemplate[] = [
                 }
             },
             {
-                id: 'gen-node', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 150 }, title: 'Gemini Generator',
+                id: 'gen-node', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 150 }, title: 'Gemini Engine',
                 width: 256, resizable: false,
                 inputs: [{ id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' }],
                 outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }],
@@ -62,7 +62,7 @@ const TEMPLATES: WorkflowTemplate[] = [
                 inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'Add a small red dragon sitting on the character\'s shoulder.' }
             },
             {
-                id: 'node-3', type: EnumNodeType.ImageGenerator, position: { x: 310, y: 250 }, title: 'Gemini Image',
+                id: 'node-3', type: EnumNodeType.ImageGenerator, position: { x: 310, y: 250 }, title: 'Gemini Engine',
                 width: 256, resizable: false,
                 inputs: [
                     { id: 'image-input', type: 'input', dataType: 'image' },
@@ -98,7 +98,7 @@ const TEMPLATES: WorkflowTemplate[] = [
                 width: 256, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'A peaceful forest with a hidden cottage.' }
             },
             {
-                id: 'style-gen', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 200 }, title: 'Style Transfer',
+                id: 'style-gen', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 200 }, title: 'Gemini Engine',
                 width: 256, resizable: false, 
                 inputs: [
                     { id: 'ref-image-input', type: 'input', dataType: 'image', label: 'Reference Image' },
@@ -135,7 +135,7 @@ const TEMPLATES: WorkflowTemplate[] = [
                 width: 256, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'Place the object from the first image into the environment of the second image with matching lighting.' }
             },
             {
-                id: 'mix-gen', type: EnumNodeType.ImageGenerator, position: { x: 400, y: 250 }, title: 'Gemini Mixer',
+                id: 'mix-gen', type: EnumNodeType.ImageGenerator, position: { x: 400, y: 250 }, title: 'Gemini Engine',
                 width: 256, resizable: false, 
                 inputs: [
                     { id: 'image-input', type: 'input', dataType: 'image', label: 'Source Image' },
@@ -170,7 +170,7 @@ const TEMPLATES: WorkflowTemplate[] = [
                 width: 256, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }], data: { text: 'A professional photo of a coffee mug sitting on this surface with soft shadows.' }
             },
             {
-                id: 'prod-gen', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 150 }, title: 'Gemini Generator',
+                id: 'prod-gen', type: EnumNodeType.ImageGenerator, position: { x: 350, y: 150 }, title: 'Gemini Engine',
                 width: 256, resizable: false, inputs: [{ id: 'image-input', type: 'input', dataType: 'image' }, { id: 'prompt-input', type: 'input', dataType: 'text' }],
                 outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }], data: { status: 'idle', mode: 'edit' }
             },
@@ -212,6 +212,125 @@ const TEMPLATES: WorkflowTemplate[] = [
         connections: [
             { id: 'conn-1', fromNodeId: 'node-1', fromPortId: 'image-output', toNodeId: 'node-2', toPortId: 'image-input' },
             { id: 'conn-2', fromNodeId: 'node-2', fromPortId: 'text-output', toNodeId: 'node-3', toPortId: 'result-input' },
+        ]
+    },
+    {
+        id: 'reimagine',
+        title: 'Image Reimagination',
+        description: 'Analyze an image to extract its "soul" as a prompt, then generate a completely new interpretation.',
+        nodes: [
+            {
+                id: 'ri-load', type: EnumNodeType.ImageLoader, position: { x: 20, y: 200 }, title: 'Target Image',
+                width: 256, height: 220, inputs: [], 
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], data: {}
+            },
+            {
+                id: 'ri-desc', type: EnumNodeType.ImageDescriber, position: { x: 300, y: 200 }, title: 'Prompt Extractor',
+                width: 280, height: 220, 
+                inputs: [{ id: 'image-input', type: 'input', dataType: 'image' }],
+                outputs: [{ id: 'text-output', type: 'output', dataType: 'text' }],
+                data: { describeMode: 'as_prompt' }
+            },
+            {
+                id: 'ri-engine', type: EnumNodeType.ImageGenerator, position: { x: 620, y: 200 }, title: 'Gemini Engine',
+                width: 256, resizable: false,
+                inputs: [{ id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' }],
+                outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }],
+                data: { status: 'idle', mode: 'generate' }
+            },
+            {
+                id: 'ri-prev', type: EnumNodeType.Preview, position: { x: 920, y: 100 }, title: 'New Interpretation',
+                width: 450, height: 450, inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }],
+                outputs: [], data: {}
+            }
+        ],
+        connections: [
+            { id: 'ric1', fromNodeId: 'ri-load', fromPortId: 'image-output', toNodeId: 'ri-desc', toPortId: 'image-input' },
+            { id: 'ric2', fromNodeId: 'ri-desc', fromPortId: 'text-output', toNodeId: 'ri-engine', toPortId: 'prompt-input' },
+            { id: 'ric3', fromNodeId: 'ri-engine', fromPortId: 'result-output', toNodeId: 'ri-prev', toPortId: 'result-input' }
+        ]
+    },
+    {
+        id: 'pose-guided',
+        title: 'Pose-Guided Character',
+        description: 'Control the exact posture of your character using the Pose Guide node and Reference mode.',
+        nodes: [
+            {
+                id: 'pose-skeleton', type: EnumNodeType.Pose, position: { x: 50, y: 100 }, title: 'Pose Guide',
+                width: 320, height: 420, inputs: [], 
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], 
+                data: {
+                    joints: {
+                        head: { x: 50, y: 15 }, neck: { x: 50, y: 25 }, leftShoulder: { x: 35, y: 35 }, rightShoulder: { x: 65, y: 35 },
+                        leftElbow: { x: 30, y: 55 }, rightElbow: { x: 70, y: 55 }, leftWrist: { x: 25, y: 75 }, rightWrist: { x: 75, y: 75 },
+                        torso: { x: 50, y: 60 }, leftHip: { x: 40, y: 65 }, rightHip: { x: 60, y: 65 }, leftKnee: { x: 35, y: 80 },
+                        rightKnee: { x: 65, y: 80 }, leftAnkle: { x: 30, y: 95 }, rightAnkle: { x: 70, y: 95 }
+                    }
+                }
+            },
+            {
+                id: 'pose-prompt', type: EnumNodeType.Prompt, position: { x: 50, y: 550 }, title: 'Character Prompt',
+                width: 320, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }],
+                data: { text: 'In this pose generate a new cyberpunk street samurai, with neon lights reflecting off chrome armor.' }
+            },
+            {
+                id: 'pose-engine', type: EnumNodeType.ImageGenerator, position: { x: 450, y: 250 }, title: 'Gemini Engine',
+                width: 256, resizable: false,
+                inputs: [
+                    { id: 'ref-image-input', type: 'input', dataType: 'image', label: 'Reference Image' },
+                    { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' }
+                ],
+                outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }],
+                data: { status: 'idle', mode: 'reference' }
+            },
+            {
+                id: 'pose-prev', type: EnumNodeType.Preview, position: { x: 750, y: 150 }, title: 'Result Preview',
+                width: 450, height: 450, inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }],
+                outputs: [], data: {}
+            }
+        ],
+        connections: [
+            { id: 'pc1', fromNodeId: 'pose-skeleton', fromPortId: 'image-output', toNodeId: 'pose-engine', toPortId: 'ref-image-input' },
+            { id: 'pc2', fromNodeId: 'pose-prompt', fromPortId: 'prompt-output', toNodeId: 'pose-engine', toPortId: 'prompt-input' },
+            { id: 'pc3', fromNodeId: 'pose-engine', fromPortId: 'result-output', toNodeId: 'pose-prev', toPortId: 'result-input' }
+        ]
+    },
+    {
+        id: 'sketch-masterpiece',
+        title: 'Sketch to Masterpiece',
+        description: 'Draw a basic concept and let the engine turn it into a high-quality digital painting.',
+        nodes: [
+            {
+                id: 'sk-draw', type: EnumNodeType.Sketch, position: { x: 50, y: 100 }, title: 'Hand Sketch',
+                width: 320, height: 400, inputs: [], 
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }], 
+                data: { color: '#ffffff', brushSize: 8 }
+            },
+            {
+                id: 'sk-prompt', type: EnumNodeType.Prompt, position: { x: 50, y: 530 }, title: 'Rendering Style',
+                width: 320, height: 120, inputs: [], outputs: [{ id: 'prompt-output', type: 'output', dataType: 'text' }],
+                data: { text: 'Transform this hand-drawn sketch into a hyper-realistic 3D render.' }
+            },
+            {
+                id: 'sk-engine', type: EnumNodeType.ImageGenerator, position: { x: 450, y: 250 }, title: 'Gemini Engine',
+                width: 256, resizable: false,
+                inputs: [
+                    { id: 'image-input', type: 'input', dataType: 'image', label: 'Image' },
+                    { id: 'prompt-input', type: 'input', dataType: 'text', label: 'Prompt' }
+                ],
+                outputs: [{ id: 'result-output', type: 'output', dataType: 'any' }],
+                data: { status: 'idle', mode: 'edit' }
+            },
+            {
+                id: 'sk-prev', type: EnumNodeType.Preview, position: { x: 750, y: 150 }, title: 'Final Painting',
+                width: 450, height: 450, inputs: [{ id: 'result-input', type: 'input', dataType: 'any' }],
+                outputs: [], data: {}
+            }
+        ],
+        connections: [
+            { id: 'skc1', fromNodeId: 'sk-draw', fromPortId: 'image-output', toNodeId: 'sk-engine', toPortId: 'image-input' },
+            { id: 'skc2', fromNodeId: 'sk-prompt', fromPortId: 'prompt-output', toNodeId: 'sk-engine', toPortId: 'prompt-input' },
+            { id: 'skc3', fromNodeId: 'sk-engine', fromPortId: 'result-output', toNodeId: 'sk-prev', toPortId: 'result-input' }
         ]
     },
     {

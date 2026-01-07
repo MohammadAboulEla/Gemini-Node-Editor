@@ -1,6 +1,6 @@
 import React from 'react';
 import { Node as NodeInstance, NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon, SparklesIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
 import Tooltip from './Tooltip';
 
@@ -65,7 +65,7 @@ const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
     [EnumNodeType.ImageLoader]: ImageIcon,
     [EnumNodeType.Prompt]: TextIcon,
     [EnumNodeType.PromptStyler]: StarIcon,
-    [EnumNodeType.ImageGenerator]: MagicWandIcon,
+    [EnumNodeType.ImageGenerator]: SparklesIcon,
     [EnumNodeType.ImageStitcher]: StitchIcon,
     [EnumNodeType.ImageDescriber]: DescribeIcon,
     [EnumNodeType.Preview]: EyeIcon,

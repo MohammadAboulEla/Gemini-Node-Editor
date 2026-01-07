@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon, SparklesIcon } from './icons';
 import createNode from '../nodeFactory';
 
 interface AddNodeMenuProps {
@@ -13,12 +13,12 @@ interface AddNodeMenuProps {
 
 const NODE_OPTIONS = [
     { type: EnumNodeType.ImageLoader, title: 'Load Image', icon: ImageIcon },
-    { type: EnumNodeType.ImageGenerator, title: 'Gemini Image', icon: MagicWandIcon },
+    { type: EnumNodeType.ImageGenerator, title: 'Gemini Engine', icon: SparklesIcon },
     { type: EnumNodeType.Prompt, title: 'Prompt', icon: TextIcon },
     { type: EnumNodeType.PromptStyler, title: 'Prompt Styler', icon: StarIcon },
     { type: EnumNodeType.Preview, title: 'Result Preview', icon: EyeIcon },
-    { type: EnumNodeType.ImageDescriber, title: 'Describe Image', icon: DescribeIcon },
     { type: EnumNodeType.Sketch, title: 'Hand Sketch', icon: PencilIcon },
+    { type: EnumNodeType.ImageDescriber, title: 'Describe Image', icon: DescribeIcon },
     { type: EnumNodeType.ImageStitcher, title: 'Stitch Images', icon: StitchIcon },
     { type: EnumNodeType.Pose, title: 'Pose Guide', icon: UserIcon },
     { type: EnumNodeType.SolidColor, title: 'Solid Color', icon: SwatchIcon },

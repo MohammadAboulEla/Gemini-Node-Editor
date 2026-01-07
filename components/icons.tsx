@@ -18,6 +18,12 @@ export const MagicWandIcon: React.FC<{className?: string}> = ({ className }) => 
     </svg>
 );
 
+export const SparklesIcon: React.FC<{className?: string}> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.091 3.091L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.091 3.091ZM18.213 10.154 18 11.25l-.213-1.096a1.5 1.5 0 0 0-1.091-1.091L15.6 8.85l1.096-.213a1.5 1.5 0 0 0 1.091-1.091L18 6.45l.213 1.096a1.5 1.5 0 0 0 1.091 1.091L20.4 8.85l-1.096.213a1.5 1.5 0 0 0-1.091 1.091Zm-1.5 7.5-.213 1.096-.213-1.096a1.5 1.5 0 0 0-1.091-1.091l-1.096-.213 1.096-.213a1.5 1.5 0 0 0 1.091-1.091l.213-1.096.213 1.096a1.5 1.5 0 0 0 1.091 1.091l1.096.213-1.096.213a1.5 1.5 0 0 0-1.091 1.091Z" />
+  </svg>
+);
+
 export const EyeIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
