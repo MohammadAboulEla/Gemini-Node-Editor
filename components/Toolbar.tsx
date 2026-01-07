@@ -28,7 +28,15 @@ const Toolbar: React.FC<ToolbarProps> = ({
       className="absolute bottom-2 left-2 pointer-events-auto z-[9999] bg-slate-800/50 backdrop-blur-sm p-1 rounded-lg border border-slate-700 flex items-center gap-1"
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <Tooltip content="Run Workflow (Ctrl+Enter)" placement="top">
+      <Tooltip 
+  content={
+    <span>
+      Run<br /> 
+      <small style={{ opacity: 0.8 }}>(Ctrl+Enter)</small>
+    </span>
+  } 
+  placement="top"
+>
         <button
           onClick={onRun}
           disabled={isWorkflowRunning || nodesCount === 0 || isBuilding}
