@@ -1,11 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable is not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 // Default models
 const DEFAULT_TEXT_MODEL = 'gemini-3-flash-preview';
 const DEFAULT_IMAGE_MODEL = 'gemini-2.5-flash-image';
@@ -22,8 +16,19 @@ export const setActiveModels = (textModel: string, imageModel: string) => {
     localStorage.setItem('gemini_node_image_model', imageModel);
 };
 
+export const getEngineSettings = () => {
+    return {
+        useCache: localStorage.getItem('gemini_node_use_cache') === 'true' // Default is false (regenerate)
+    };
+};
+
+export const setEngineSettings = (useCache: boolean) => {
+    localStorage.setItem('gemini_node_use_cache', String(useCache));
+};
+
 export const editImage = async (base64Image: string, mimeType: string, prompt: string): Promise<{imageUrl: string, text: string}> => {
     const { imageModel } = getActiveModels();
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     try {
         const imagePart = {
             inlineData: {
@@ -73,6 +78,7 @@ export const editImage = async (base64Image: string, mimeType: string, prompt: s
 
 export const mixImages = async (sourceImage: {base64Image: string, mimeType: string}, refImage: {base64Image: string, mimeType: string}, prompt: string): Promise<{imageUrl: string, text: string}> => {
     const { imageModel } = getActiveModels();
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     try {
         const sourceImagePart = {
             inlineData: {
@@ -134,6 +140,7 @@ export const mixImages = async (sourceImage: {base64Image: string, mimeType: str
 
 export const generateWithStyle = async (refImage: {base64Image: string, mimeType: string}, prompt: string): Promise<{imageUrl: string, text: string}> => {
     const { imageModel } = getActiveModels();
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     try {
         const refImagePart = {
             inlineData: {
@@ -191,6 +198,7 @@ export const generateWithStyle = async (refImage: {base64Image: string, mimeType
 
 export const generateWithRef = async (refImage: {base64Image: string, mimeType: string}, prompt: string): Promise<{imageUrl: string, text: string}> => {
     const { imageModel } = getActiveModels();
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     try {
         const refImagePart = {
             inlineData: {
@@ -249,6 +257,7 @@ export const generateWithRef = async (refImage: {base64Image: string, mimeType: 
 
 export const generateImage = async (prompt: string): Promise<{imageUrl: string,  text: string}> => {
     const { imageModel } = getActiveModels();
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     try {
         const instructionPart = {
             text: "Generate a new image based on the following prompt.",
@@ -310,6 +319,7 @@ const getDescribePrompt = (mode: DescribeMode): string => {
 
 export const describeImage = async (base64Image: string, mimeType: string, mode: DescribeMode = 'normal'): Promise<string> => {
     const { textModel } = getActiveModels();
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     try {
         const imagePart = {
             inlineData: {

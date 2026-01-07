@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CogIcon } from './icons';
-import { getActiveModels, setActiveModels } from '../services/geminiService';
+import { getActiveModels, setActiveModels, getEngineSettings, setEngineSettings } from '../services/geminiService';
 
 interface SettingsPanelProps {
     onClose: () => void;
@@ -20,6 +20,7 @@ const IMAGE_MODELS = [
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
     const panelRef = useRef<HTMLDivElement>(null);
     const [models, setModels] = useState(getActiveModels());
+    const [engineSettings, setEngineSettingsState] = useState(getEngineSettings());
 
     // Close on escape key
     useEffect(() => {
@@ -41,6 +42,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
         const newModels = { ...models, [type]: value };
         setModels(newModels);
         setActiveModels(newModels.textModel, newModels.imageModel);
+    };
+
+    const handleCacheChange = (value: string) => {
+        const useCache = value === 'true';
+        setEngineSettingsState({ useCache });
+        setEngineSettings(useCache);
     };
 
     return (
@@ -97,6 +104,19 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
                             {IMAGE_MODELS.map(m => (
                                 <option key={m.id} value={m.id}>{m.name}</option>
                             ))}
+                        </select>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Engine Behavior</h3>
+                        <p className="text-xs text-slate-500">Control how the Gemini Engine handles identical inputs.</p>
+                        <select
+                            value={String(engineSettings.useCache)}
+                            onChange={(e) => handleCacheChange(e.target.value)}
+                            className="w-full p-2.5 bg-slate-900 border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
+                        >
+                            <option value="false">Always Regenerate (Default)</option>
+                            <option value="true">Return Same Result (Use Cache)</option>
                         </select>
                     </section>
 

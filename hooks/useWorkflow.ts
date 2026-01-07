@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType } from '../types';
-import { editImage, generateImage, describeImage, DescribeMode, mixImages, generateWithStyle, generateWithRef } from '../services/geminiService';
+import { editImage, generateImage, describeImage, DescribeMode, mixImages, generateWithStyle, generateWithRef, getEngineSettings } from '../services/geminiService';
 import { getStylesForFile } from '../services/styleService';
 
 const normalizeImageInput = (input: any): { base64Image: string; mimeType: string } | null => {
@@ -76,6 +76,7 @@ export const useWorkflow = (
     
         // 2. Execute nodes in order
         const nodeOutputs: Record<string, Record<string, any>> = {};
+        const { useCache } = getEngineSettings();
     
         for (const node of sortedNodes) {
             // Gather inputs for the current node
@@ -260,7 +261,7 @@ export const useWorkflow = (
                             const imageInput = normalizeImageInput(inputs['image-input']);
                             if (!imageInput) throw new Error("Missing or invalid image input for edit mode.");
                             const cacheKey = `edit-${promptInput.text}-${imageInput.base64Image}`;
-                            const cachedResult = node.data.cache?.[cacheKey];
+                            const cachedResult = useCache ? node.data.cache?.[cacheKey] : null;
                             if (cachedResult) { output = { 'result-output': cachedResult }; } else {
                                 const result = await editImage(imageInput.base64Image, imageInput.mimeType, promptInput.text);
                                 const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
@@ -272,7 +273,7 @@ export const useWorkflow = (
                             const refImageInput = normalizeImageInput(inputs['ref-image-input']);
                             if (!sourceImageInput || !refImageInput) throw new Error("Missing or invalid image inputs for mix mode.");
                             const cacheKey = `mix-${promptInput.text}-${sourceImageInput.base64Image}-${refImageInput.base64Image}`;
-                            const cachedResult = node.data.cache?.[cacheKey];
+                            const cachedResult = useCache ? node.data.cache?.[cacheKey] : null;
                             if (cachedResult) { output = { 'result-output': cachedResult }; } else {
                                 const result = await mixImages(sourceImageInput, refImageInput, promptInput.text);
                                 const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
@@ -283,7 +284,7 @@ export const useWorkflow = (
                             const refImageInput = normalizeImageInput(inputs['ref-image-input']);
                             if (!refImageInput) throw new Error("Missing or invalid reference image input for style mode.");
                             const cacheKey = `style-${promptInput.text}-${refImageInput.base64Image}`;
-                            const cachedResult = node.data.cache?.[cacheKey];
+                            const cachedResult = useCache ? node.data.cache?.[cacheKey] : null;
                             if (cachedResult) { output = { 'result-output': cachedResult }; } else {
                                 const result = await generateWithStyle(refImageInput, promptInput.text);
                                 const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
@@ -294,7 +295,7 @@ export const useWorkflow = (
                             const refImageInput = normalizeImageInput(inputs['ref-image-input']);
                             if (!refImageInput) throw new Error("Missing or invalid reference image input for reference mode.");
                             const cacheKey = `ref-${promptInput.text}-${refImageInput.base64Image}`;
-                            const cachedResult = node.data.cache?.[cacheKey];
+                            const cachedResult = useCache ? node.data.cache?.[cacheKey] : null;
                             if (cachedResult) { output = { 'result-output': cachedResult }; } else {
                                 const result = await generateWithRef(refImageInput, promptInput.text);
                                 const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
@@ -303,7 +304,7 @@ export const useWorkflow = (
                             }
                         } else { 
                             const cacheKey = `generate-${promptInput.text}`;
-                            const cachedResult = node.data.cache?.[cacheKey];
+                            const cachedResult = useCache ? node.data.cache?.[cacheKey] : null;
                             if (cachedResult) { output = { 'result-output': cachedResult }; } else {
                                 const result = await generateImage(promptInput.text);
                                 const newCache = { ...(node.data.cache || {}), [cacheKey]: result };
@@ -344,7 +345,7 @@ export const useWorkflow = (
                         if (!descImageInput) throw new Error("Missing image input.");
                         const describeMode = node.data.describeMode || 'normal' as DescribeMode;
                         const descCacheKey = descImageInput.base64Image + describeMode;
-                        const descCachedResult = node.data.cache?.[descCacheKey];
+                        const descCachedResult = useCache ? node.data.cache?.[descCacheKey] : null;
                         let descriptionText: string;
                         if (descCachedResult) { descriptionText = descCachedResult; } else {
                             descriptionText = await describeImage(descImageInput.base64Image, descImageInput.mimeType, describeMode);
