@@ -1,3 +1,4 @@
+
 import { Node, NodeType as EnumNodeType, Point } from './types';
 
 const createNode = (type: EnumNodeType, position: Point): Node => {
@@ -109,10 +110,11 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 inputs: [],
                 outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
                 width: 320,
-                height: 420,
+                height: 480,
                 minWidth: 200,
-                minHeight: 250,
+                minHeight: 300,
                 data: {
+                    outputMode: 'skeleton',
                     joints: {
                         head: { x: 50, y: 15 },
                         neck: { x: 50, y: 25 },

@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType } from '../types';
 import { editImage, generateImage, describeImage, DescribeMode, mixImages, generateWithStyle, generateWithRef, getEngineSettings } from '../services/geminiService';
@@ -157,6 +158,7 @@ export const useWorkflow = (
 
                     case EnumNodeType.Pose:
                         const joints = node.data.joints;
+                        const outputMode = node.data.outputMode || 'skeleton';
                         const poseCanvas = document.createElement('canvas');
                         poseCanvas.width = 1024; poseCanvas.height = 1024;
                         const pCtx = poseCanvas.getContext('2d');
@@ -164,7 +166,7 @@ export const useWorkflow = (
                         
                         pCtx.fillStyle = 'black';
                         pCtx.fillRect(0, 0, 1024, 1024);
-                        pCtx.lineWidth = 8;
+                        pCtx.lineWidth = outputMode === 'monochrome' ? 24 : 8;
                         pCtx.lineCap = 'round';
 
                         JOINT_CONNECTIONS.forEach(([from, to, color]) => {
@@ -172,7 +174,7 @@ export const useWorkflow = (
                             const jTo = joints[to];
                             if (jFrom && jTo) {
                                 pCtx.beginPath();
-                                pCtx.strokeStyle = color;
+                                pCtx.strokeStyle = outputMode === 'monochrome' ? 'white' : color;
                                 pCtx.moveTo(jFrom.x * 10.24, jFrom.y * 10.24);
                                 pCtx.lineTo(jTo.x * 10.24, jTo.y * 10.24);
                                 pCtx.stroke();
@@ -181,9 +183,10 @@ export const useWorkflow = (
                         
                         // Draw joint dots
                         pCtx.fillStyle = 'white';
+                        const dotRadius = outputMode === 'monochrome' ? 8 : 5;
                         Object.values(joints).forEach((j: any) => {
                             pCtx.beginPath();
-                            pCtx.arc(j.x * 10.24, j.y * 10.24, 5, 0, Math.PI * 2);
+                            pCtx.arc(j.x * 10.24, j.y * 10.24, dotRadius, 0, Math.PI * 2);
                             pCtx.fill();
                         });
 
@@ -225,7 +228,7 @@ export const useWorkflow = (
 
                     case EnumNodeType.Padding:
                         const padImgData = normalizeImageInput(inputs['image-input']);
-                        if (!padImgData) throw new Error("Missing image input.");
+                        if (! padImgData) throw new Error("Missing image input.");
                         const { aspectRatio: padRatioStr = '1:1', direction: padDir = 'center', color: padColor = '#000000' } = node.data;
                         const [pR_W, pR_H] = padRatioStr.split(':').map(Number);
                         const padTargetRatio = pR_W / pR_H;
