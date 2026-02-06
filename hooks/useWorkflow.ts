@@ -98,6 +98,7 @@ export const useWorkflow = (
                     case EnumNodeType.ImageLoader:
                     case EnumNodeType.Prompt:
                     case EnumNodeType.Sketch:
+                    case EnumNodeType.Annotation:
                         output = { [node.outputs[0].id]: node.data };
                         break;
                     

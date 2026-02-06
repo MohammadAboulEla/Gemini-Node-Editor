@@ -1,3 +1,4 @@
+
 export enum NodeType {
   ImageLoader = 'IMAGE_LOADER',
   Prompt = 'PROMPT',
@@ -11,6 +12,7 @@ export enum NodeType {
   Padding = 'PADDING',
   Pose = 'POSE',
   Sketch = 'SKETCH',
+  Annotation = 'ANNOTATION',
 }
 
 export interface Point {

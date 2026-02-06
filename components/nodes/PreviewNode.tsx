@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NodeContentProps } from './types';
 import { ClipboardIcon, CheckIcon } from '../icons';
 
@@ -8,6 +8,42 @@ export const PreviewNode: React.FC<NodeContentProps> = ({ node }) => {
     const hasImage = !!imageUrl;
     const hasText = !!text?.trim();
     const [copied, setCopied] = useState(false);
+    const [displaySrc, setDisplaySrc] = useState<string | null>(null);
+
+    useEffect(() => {
+        let objectUrl: string | null = null;
+
+        if (imageUrl && imageUrl.startsWith('data:')) {
+            try {
+                // Convert large Data URIs to Blob URLs to fix "Open image in new tab"
+                // Browser address bars have length limits that Data URIs often exceed
+                const [header, base64] = imageUrl.split(',');
+                const mimeMatch = header.match(/:(.*?);/);
+                const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+                
+                const byteCharacters = atob(base64);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: mime });
+                objectUrl = URL.createObjectURL(blob);
+                setDisplaySrc(objectUrl);
+            } catch (e) {
+                console.error("Failed to create blob from data URL", e);
+                setDisplaySrc(imageUrl); // Fallback to original
+            }
+        } else {
+            setDisplaySrc(imageUrl);
+        }
+
+        return () => {
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [imageUrl]);
 
     const handleCopy = () => {
         if (text) {
@@ -21,9 +57,9 @@ export const PreviewNode: React.FC<NodeContentProps> = ({ node }) => {
         <div className="p-2 h-full flex flex-col gap-2">
             {(hasImage || !hasText) && (
                 <div className="flex-grow min-h-0 w-full bg-slate-900 rounded-md flex items-center justify-center overflow-hidden">
-                    {hasImage ? (
+                    {displaySrc ? (
                         <img 
-                            src={imageUrl} 
+                            src={displaySrc} 
                             alt="Generated result" 
                             className="max-w-full max-h-full object-contain" 
                             onContextMenu={(e) => e.stopPropagation()}

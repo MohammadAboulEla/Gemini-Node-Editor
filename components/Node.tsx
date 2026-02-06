@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Node as NodeInstance, NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon, SparklesIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, ResizeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon, SparklesIcon, TagIcon } from './icons';
 import { NodeContentProps } from './nodes/types';
 import Tooltip from './Tooltip';
 
@@ -16,6 +17,7 @@ import { CropImageNode } from './nodes/CropImageNode';
 import { PaddingNode } from './nodes/PaddingNode';
 import { PoseNode } from './nodes/PoseNode';
 import { SketchNode } from './nodes/SketchNode';
+import { AnnotationNode } from './nodes/AnnotationNode';
 
 interface NodeProps {
     node: NodeInstance;
@@ -56,12 +58,14 @@ const NodeContent: React.FC<NodeContentProps> = (props) => {
             return <PoseNode {...props} />;
         case EnumNodeType.Sketch:
             return <SketchNode {...props} />;
+        case EnumNodeType.Annotation:
+            return <AnnotationNode {...props} />;
         default:
             return null;
     }
 };
 
-const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
+const ICONS: Record<EnumNodeType, React.FC<{ className?: string }>> = {
     [EnumNodeType.ImageLoader]: ImageIcon,
     [EnumNodeType.Prompt]: TextIcon,
     [EnumNodeType.PromptStyler]: StarIcon,
@@ -74,17 +78,18 @@ const ICONS: Record<EnumNodeType, React.FC<{className?: string}>> = {
     [EnumNodeType.Padding]: PaddingIcon,
     [EnumNodeType.Pose]: UserIcon,
     [EnumNodeType.Sketch]: PencilIcon,
+    [EnumNodeType.Annotation]: TagIcon,
 }
 
 const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMouseDown, onPortMouseDown, onContextMenu, setPortRef, updateNodeData, updateNode, deselectAll }) => {
     const Icon = ICONS[node.type] || StarIcon;
-    
+
     const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
     const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
         const isInteractive = ['TEXTAREA', 'IMG', 'INPUT', 'SELECT', 'CANVAS'].includes(target.tagName) || target.closest('.select-text');
-        
+
         if (isInteractive) {
             return;
         }
@@ -107,10 +112,10 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
                 className="bg-slate-900 p-2 rounded-t-md cursor-grab active:cursor-grabbing flex items-center gap-2 flex-shrink-0"
                 onMouseDown={(e) => onMouseDown(e, node.id)}
             >
-                <Icon className="w-4 h-4 text-cyan-400"/>
+                <Icon className="w-4 h-4 text-cyan-400" />
                 <h3 className="font-bold text-sm select-none truncate pr-2" title={node.title}>{node.title}</h3>
             </div>
-            
+
             <div className="flex-grow min-h-0">
                 <NodeContent node={node} updateNodeData={updateNodeData} updateNode={updateNode} deselectAll={deselectAll} />
             </div>
@@ -171,4 +176,4 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onMouseDown, onResizeMous
     );
 };
 
-export default Node;
+export default React.memo(Node);

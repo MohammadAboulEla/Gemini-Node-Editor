@@ -144,7 +144,19 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 height: 400,
                 minWidth: 200,
                 minHeight: 250,
-                data: { base64Image: null, color: '#ffffff', brushSize: 5 }
+                data: { elements: [] }
+            };
+        case EnumNodeType.Annotation:
+            return {
+                ...baseNode,
+                title: 'Image Annotation',
+                inputs: [],
+                outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
+                width: 400,
+                height: 500,
+                minWidth: 300,
+                minHeight: 300,
+                data: { elements: [] }
             };
         case EnumNodeType.Preview:
             return {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, MouseEvent, useEffect } from 'react';
+import React, { useState, useCallback, useRef, MouseEvent, useEffect, useMemo } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, Point } from './types';
 import AddNodeMenu from './components/AddNodeMenu';
 import NodeContextMenu from './components/NodeContextMenu';
@@ -62,7 +62,7 @@ const App: React.FC = () => {
     const [isBuilding, setIsBuilding] = useState(false);
 
     const {
-        viewTransform, handleWheel, handlePanMouseDown, handlePanMouseMove,
+        viewTransform, isPanning, handleWheel, handlePanMouseDown, handlePanMouseMove,
         stopPanning, resetView, getPositionInWorldSpace
     } = useViewTransform(editorRef);
 
@@ -100,7 +100,7 @@ const App: React.FC = () => {
                 y: (fromViewportY - viewTransform.y) / viewTransform.scale,
             };
             const toPoint = getPositionInWorldSpace({ x: e.clientX, y: e.clientY });
-            
+
             // To keep the bezier curves logically flowing left-to-right (Output to Input)
             const pathStart = connecting.portType === 'output' ? fromPoint : toPoint;
             const pathEnd = connecting.portType === 'output' ? toPoint : fromPoint;
@@ -126,14 +126,14 @@ const App: React.FC = () => {
                     createConnection(toPort.nodeId, toPort.portId, connecting.fromNodeId, connecting.fromPortId);
                 }
             } else if (!toPort) {
-                setAddNodeMenu({ 
-                    visible: true, 
-                    position: { x: e.clientX, y: e.clientY }, 
-                    connectionContext: { 
-                        fromNodeId: connecting.fromNodeId, 
+                setAddNodeMenu({
+                    visible: true,
+                    position: { x: e.clientX, y: e.clientY },
+                    connectionContext: {
+                        fromNodeId: connecting.fromNodeId,
                         fromPortId: connecting.fromPortId,
                         portType: connecting.portType
-                    } 
+                    }
                 });
             }
         }
@@ -157,11 +157,11 @@ const App: React.FC = () => {
         setConnections(JSON.parse(JSON.stringify(template.connections))); resetView(); setIsBuilding(false);
     }, [setNodes, setConnections, resetView]);
 
-    const getPortCenter = (nodeId: string, portId: string): Point | null => {
+    const getPortCenter = useCallback((nodeId: string, portId: string): Point | null => {
         const portPos = portPositions[`${nodeId}:${portId}`];
         if (!portPos || !editorRef.current) return null;
         return getPositionInWorldSpace({ x: portPos.rect.left + portPos.rect.width / 2, y: portPos.rect.top + portPos.rect.height / 2 });
-    };
+    }, [portPositions, getPositionInWorldSpace]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -182,31 +182,31 @@ const App: React.FC = () => {
     }, [connecting]);
 
     // Calculate source data type for the search menu filter
-    const getSourceDataType = () => {
+    const sourceDataType = useMemo(() => {
         if (!addNodeMenu?.connectionContext) return undefined;
         const { fromNodeId, fromPortId, portType } = addNodeMenu.connectionContext;
         const node = nodes.find(n => n.id === fromNodeId);
-        const port = portType === 'output' 
+        const port = portType === 'output'
             ? node?.outputs.find(p => p.id === fromPortId)
             : node?.inputs.find(p => p.id === fromPortId);
         return port?.dataType;
-    };
+    }, [addNodeMenu?.connectionContext, nodes]);
 
     return (
         <div className="w-screen h-screen flex bg-slate-900 text-white">
-            <div ref={editorRef} className="flex-grow h-full overflow-hidden relative cursor-default" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onWheel={handleWheel}
+            <div ref={editorRef} className={`flex-grow h-full overflow-hidden relative ${isPanning ? 'cursor-grabbing' : 'cursor-default'}`} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onWheel={handleWheel}
                 onMouseDown={(e) => { if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('background-grid')) { if (e.ctrlKey || e.metaKey) startSelectionBox(e); else { deselectAll(); handlePanMouseDown(e); } } }}
                 onDoubleClick={(e) => { if (e.target === e.currentTarget) setAddNodeMenu({ visible: true, position: { x: e.clientX, y: e.clientY } }); }}
                 onContextMenu={(e) => { if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('background-grid')) { e.preventDefault(); setAddNodeMenu({ visible: true, position: { x: e.clientX, y: e.clientY } }); } }}>
-                
+
                 <BackgroundGrid onOpenSettings={() => setIsSettingsPanelVisible(true)} />
 
                 {nodes.length === 0 && !isBuilding && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40 select-none transition-opacity duration-300">
-                      <TemplateIcon className="w-16 h-16 text-slate-600 mb-4" />
-                      <h2 className="text-xl font-bold text-slate-500">Empty Canvas</h2>
-                      <p className="text-slate-600">Select a template below or right click and build</p>
-                  </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40 select-none transition-opacity duration-300">
+                        <TemplateIcon className="w-16 h-16 text-slate-600 mb-4" />
+                        <h2 className="text-xl font-bold text-slate-500">Empty Canvas</h2>
+                        <p className="text-slate-600">Select a template below or right click and build</p>
+                    </div>
                 )}
 
                 {isBuilding && (
@@ -220,11 +220,11 @@ const App: React.FC = () => {
                 <Toolbar isWorkflowRunning={isWorkflowRunning} nodesCount={nodes.length} isBuilding={isBuilding} scale={viewTransform.scale} onRun={runWorkflow} onShowHistory={() => setIsHistoryPanelVisible(true)} onShowTemplates={() => setIsTemplatesPanelVisible(true)} onResetView={resetView} />
 
                 {addNodeMenu?.visible && (
-                    <AddNodeMenu 
-                        position={addNodeMenu.position} 
-                        onSelect={handleAddNode} 
-                        onClose={() => setAddNodeMenu(null)} 
-                        sourceDataType={getSourceDataType()}
+                    <AddNodeMenu
+                        position={addNodeMenu.position}
+                        onSelect={handleAddNode}
+                        onClose={() => setAddNodeMenu(null)}
+                        sourceDataType={sourceDataType}
                         sourceDirection={addNodeMenu.connectionContext?.portType}
                     />
                 )}

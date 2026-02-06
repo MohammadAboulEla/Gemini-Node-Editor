@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeType as EnumNodeType } from '../types';
-import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon, SparklesIcon } from './icons';
+import { ImageIcon, TextIcon, MagicWandIcon, EyeIcon, StitchIcon, DescribeIcon, SwatchIcon, ScissorsIcon, PaddingIcon, StarIcon, UserIcon, PencilIcon, SparklesIcon, TagIcon } from './icons';
 import createNode from '../nodeFactory';
 
 interface AddNodeMenuProps {
@@ -18,6 +19,7 @@ const NODE_OPTIONS = [
     { type: EnumNodeType.PromptStyler, title: 'Prompt Styler', icon: StarIcon },
     { type: EnumNodeType.Preview, title: 'Result Preview', icon: EyeIcon },
     { type: EnumNodeType.Sketch, title: 'Hand Sketch', icon: PencilIcon },
+    { type: EnumNodeType.Annotation, title: 'Image Annotation', icon: TagIcon },
     { type: EnumNodeType.ImageDescriber, title: 'Describe Image', icon: DescribeIcon },
     { type: EnumNodeType.ImageStitcher, title: 'Stitch Images', icon: StitchIcon },
     { type: EnumNodeType.Pose, title: 'Pose Guide', icon: UserIcon },
