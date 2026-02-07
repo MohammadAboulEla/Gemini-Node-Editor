@@ -152,10 +152,9 @@ const createNode = (type: EnumNodeType, position: Point): Node => {
                 title: 'Image Annotation',
                 inputs: [],
                 outputs: [{ id: 'image-output', type: 'output', dataType: 'image' }],
-                width: 400,
-                height: 500,
-                minWidth: 300,
-                minHeight: 300,
+                height: 220,
+                minWidth: 220,
+                minHeight: 220,
                 data: { elements: [] }
             };
         case EnumNodeType.Preview:

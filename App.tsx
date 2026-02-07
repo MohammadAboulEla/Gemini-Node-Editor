@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, MouseEvent, useEffect, useMemo } from 'react';
 import { Node as NodeType, Connection as ConnectionType, NodeType as EnumNodeType, Point } from './types';
 import AddNodeMenu from './components/AddNodeMenu';
@@ -14,6 +15,7 @@ import Viewport from './components/Viewport';
 import { useViewTransform } from './hooks/useViewTransform';
 import { useEditor } from './hooks/useEditor';
 import { useWorkflow } from './hooks/useWorkflow';
+import { loadWorkflowState, saveWorkflowState, getEngineSettings } from './services/geminiService';
 
 const INITIAL_NODES: NodeType[] = [];
 const INITIAL_CONNECTIONS: ConnectionType[] = [];
@@ -62,7 +64,7 @@ const App: React.FC = () => {
     const [isBuilding, setIsBuilding] = useState(false);
 
     const {
-        viewTransform, isPanning, handleWheel, handlePanMouseDown, handlePanMouseMove,
+        viewTransform, setViewTransform, isPanning, handleWheel, handlePanMouseDown, handlePanMouseMove,
         stopPanning, resetView, getPositionInWorldSpace
     } = useViewTransform(editorRef);
 
@@ -72,6 +74,29 @@ const App: React.FC = () => {
         handleConnectionClick, handleNodeDrag, stopDraggingNode, createConnection, addNode, setPortRef,
         handleResizeMouseDown, handleNodeResize, stopResizingNode, startSelectionBox, updateSelectionBox, endSelectionBox
     } = useEditor(INITIAL_NODES, INITIAL_CONNECTIONS, viewTransform, getPositionInWorldSpace);
+
+    // Restore workflow state on mount
+    useEffect(() => {
+        const settings = getEngineSettings();
+        if (settings.restoreWorkflowOnLoad) {
+            const savedState = loadWorkflowState();
+            if (savedState) {
+                if (savedState.nodes) setNodes(savedState.nodes);
+                if (savedState.connections) setConnections(savedState.connections);
+                if (savedState.viewTransform) setViewTransform(savedState.viewTransform);
+            }
+        }
+    }, [setNodes, setConnections, setViewTransform]);
+
+    // Auto-save workflow state
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (nodes.length > 0) {
+                saveWorkflowState({ nodes, connections, viewTransform });
+            }
+        }, 1000); // Debounce save
+        return () => clearTimeout(timer);
+    }, [nodes, connections, viewTransform]);
 
     const addToHistory = useCallback((imageUrl: string) => {
         setHistory(prevHistory => {

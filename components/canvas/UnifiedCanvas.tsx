@@ -74,20 +74,30 @@ export const UnifiedCanvas: React.FC<UnifiedCanvasProps> = ({
     };
 
     const drawArrow = (ctx: CanvasRenderingContext2D, from: {x: number, y: number}, to: {x: number, y: number}, size: number) => {
+        const arrowHeadLength = size * 2.5; // Length of the arrowhead from tip to base
+        const arrowHeadWidth = size * 1.5;  // Half-width of the arrowhead base (spread)
+
+        // Angle of the line
         const angle = Math.atan2(to.y - from.y, to.x - from.x);
-        const headlen = size * 3; 
-        
+
+        // Calculate the point where the main line ends (base of the arrowhead)
+        const lineEndX = to.x - arrowHeadLength * Math.cos(angle);
+        const lineEndY = to.y - arrowHeadLength * Math.sin(angle);
+
+        // Draw the main line segment
         ctx.beginPath();
         ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
+        ctx.lineTo(lineEndX, lineEndY);
         ctx.stroke();
-        
+
+        // Draw the arrowhead (a filled triangle)
         ctx.beginPath();
-        ctx.moveTo(to.x, to.y);
-        ctx.lineTo(to.x - headlen * Math.cos(angle - Math.PI / 6), to.y - headlen * Math.sin(angle - Math.PI / 6));
-        ctx.lineTo(to.x - headlen * Math.cos(angle + Math.PI / 6), to.y - headlen * Math.sin(angle + Math.PI / 6));
-        ctx.lineTo(to.x, to.y);
-        ctx.fill(); 
+        ctx.moveTo(to.x, to.y); // Tip of the arrow
+        // Calculate the two points at the base of the arrowhead
+        ctx.lineTo(lineEndX - arrowHeadWidth * Math.cos(angle - Math.PI / 2), lineEndY - arrowHeadWidth * Math.sin(angle - Math.PI / 2));
+        ctx.lineTo(lineEndX - arrowHeadWidth * Math.cos(angle + Math.PI / 2), lineEndY - arrowHeadWidth * Math.sin(angle + Math.PI / 2));
+        ctx.closePath(); // Closes the triangle (connects the last point to the first)
+        ctx.fill(); // Fills the triangle
     };
 
     // Shared drawing logic using scale dimensions

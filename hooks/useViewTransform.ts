@@ -73,6 +73,7 @@ export const useViewTransform = (editorRef: React.RefObject<HTMLDivElement>) => 
 
     return {
         viewTransform,
+        setViewTransform, // Exposed for restoring state
         isPanning,
         handleWheel,
         handlePanMouseDown,
